@@ -195,6 +195,16 @@ const FlowVisualization = () => {
           <span className="text-[10px] font-bold" style={{ color: "hsl(35,80%,30%)" }}>?</span>
         </div>
 
+        {/* LEGO pixel man — standing near the pipe */}
+        <motion.img
+          src={legoPixelMan}
+          alt="Pixel LEGO construction worker"
+          className="absolute bottom-8 w-10 h-10 object-contain"
+          style={{ right: "12%", imageRendering: "pixelated" }}
+          animate={{ y: [0, -2, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        />
+
         {/* LEGO Molecule — pixel art style */}
         <AnimatePresence>
           {flowing && (
