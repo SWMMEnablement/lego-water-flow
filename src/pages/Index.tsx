@@ -108,6 +108,14 @@ const Index = () => {
           </BrickCardBody>
         </BrickCard>
 
+        {/* Flow Visualization */}
+        <BrickCard variant="default">
+          <BrickCardHeader variant="default">🌊 FLOW SIMULATOR</BrickCardHeader>
+          <BrickCardBody>
+            <FlowVisualization />
+          </BrickCardBody>
+        </BrickCard>
+
         {/* Assembly Guide */}
         <BrickCard variant="default">
           <BrickCardHeader variant="default">🔨 ASSEMBLY GUIDE</BrickCardHeader>
