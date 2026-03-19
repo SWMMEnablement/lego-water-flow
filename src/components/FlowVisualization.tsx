@@ -35,6 +35,11 @@ const FlowVisualization = () => {
 
   const handleFlow = () => {
     setFlowing(true);
+    const sfxDelay = fits ? (1200 / speed) : (900 / speed);
+    setTimeout(() => {
+      if (fits) playWhoosh();
+      else playBonk();
+    }, sfxDelay);
     timeoutRef.current = setTimeout(() => {
       setFlowing(false);
       if (loopRef.current) {
