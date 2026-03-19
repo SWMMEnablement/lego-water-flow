@@ -117,6 +117,14 @@ const Index = () => {
           </BrickCardBody>
         </BrickCard>
 
+        {/* Parts Inventory */}
+        <BrickCard variant="default">
+          <BrickCardHeader variant="default">📦 PARTS INVENTORY</BrickCardHeader>
+          <BrickCardBody>
+            <PartsInventory />
+          </BrickCardBody>
+        </BrickCard>
+
         {/* Assembly Guide */}
         <BrickCard variant="default">
           <BrickCardHeader variant="default">🔨 ASSEMBLY GUIDE</BrickCardHeader>
