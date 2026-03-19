@@ -19,7 +19,8 @@ const FlowVisualization = () => {
   const [speed, setSpeed] = useState<1 | 2 | 3>(1);
   const [coins, setCoins] = useState<{ id: number; x: number; y: number }[]>([]);
   const [score, setScore] = useState(0);
-  const [reaction, setReaction] = useState<"idle" | "cheer" | "duck">("idle");
+  const [reaction, setReaction] = useState<"idle" | "cheer" | "duck" | "split">("idle");
+  const [split, setSplit] = useState(false);
   const coinIdRef = useRef(0);
   const loopRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
