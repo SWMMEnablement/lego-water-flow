@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ['Fredoka', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -46,6 +50,13 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        lego: {
+          blue: "hsl(var(--lego-blue))",
+          red: "hsl(var(--lego-red))",
+          yellow: "hsl(var(--lego-yellow))",
+          green: "hsl(var(--lego-green))",
+          white: "hsl(var(--lego-white))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
