@@ -17,6 +17,9 @@ const FlowVisualization = () => {
   const [pipeSize, setPipeSize] = useState<PipeKey>("small");
   const [loop, setLoop] = useState(false);
   const [speed, setSpeed] = useState<1 | 2 | 3>(1);
+  const [coins, setCoins] = useState<{ id: number; x: number; y: number }[]>([]);
+  const [score, setScore] = useState(0);
+  const coinIdRef = useRef(0);
   const loopRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -38,8 +41,22 @@ const FlowVisualization = () => {
     setFlowing(true);
     const sfxDelay = fits ? (1200 / speed) : (900 / speed);
     setTimeout(() => {
-      if (fits) playWhoosh();
-      else playBonk();
+      if (fits) {
+        playWhoosh();
+        // Spawn coins
+        const newCoins = Array.from({ length: 3 }, (_, i) => ({
+          id: coinIdRef.current++,
+          x: 60 + Math.random() * 20,
+          y: 20 + i * 15,
+        }));
+        setCoins(prev => [...prev, ...newCoins]);
+        setScore(prev => prev + 10);
+        setTimeout(() => {
+          setCoins(prev => prev.filter(c => !newCoins.find(nc => nc.id === c.id)));
+        }, 1200);
+      } else {
+        playBonk();
+      }
     }, sfxDelay);
     timeoutRef.current = setTimeout(() => {
       setFlowing(false);
@@ -243,6 +260,35 @@ const FlowVisualization = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Coins */}
+        <AnimatePresence>
+          {coins.map((coin) => (
+            <motion.div
+              key={coin.id}
+              className="absolute w-6 h-6 border-2 border-[hsl(48,100%,36%)] flex items-center justify-center font-bold text-[10px]"
+              style={{
+                borderRadius: 0,
+                background: "hsl(48, 100%, 50%)",
+                color: "hsl(35,80%,30%)",
+                left: `${coin.x}%`,
+              }}
+              initial={{ bottom: coin.y + "%", opacity: 1, scale: 0.5 }}
+              animate={{ bottom: `${coin.y + 25}%`, opacity: 0, scale: 1.2 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1, ease: "easeOut" }}
+            >
+              ¢
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
+        {/* Score */}
+        {score > 0 && (
+          <div className="absolute top-2 right-3 font-display font-bold text-[11px] tracking-wider" style={{ color: "hsl(48,100%,40%)" }}>
+            🪙 {score}
+          </div>
+        )}
 
         {/* Stuck indicator — pixel text */}
         <AnimatePresence>
