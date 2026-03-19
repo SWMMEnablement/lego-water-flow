@@ -4,6 +4,7 @@ import legoFaucet from "@/assets/lego-faucet.png";
 import BrickCard, { BrickCardHeader, BrickCardBody } from "@/components/BrickCard";
 import PipeSizer from "@/components/PipeSizer";
 import LegoStud from "@/components/LegoStud";
+import AssemblyGuide from "@/components/AssemblyGuide";
 
 const snap = {
   initial: { opacity: 0, y: 20 },
