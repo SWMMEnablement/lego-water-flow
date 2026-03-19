@@ -107,6 +107,14 @@ const Index = () => {
           </BrickCardBody>
         </BrickCard>
 
+        {/* Assembly Guide */}
+        <BrickCard variant="default">
+          <BrickCardHeader variant="default">🔨 ASSEMBLY GUIDE</BrickCardHeader>
+          <BrickCardBody>
+            <AssemblyGuide />
+          </BrickCardBody>
+        </BrickCard>
+
         {/* Specs table */}
         <motion.div {...snap} className="space-y-3">
           <h2 className="font-display text-2xl font-bold text-foreground">📐 Quick Specs</h2>
