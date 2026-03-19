@@ -19,6 +19,7 @@ const FlowVisualization = () => {
   const [speed, setSpeed] = useState<1 | 2 | 3>(1);
   const [coins, setCoins] = useState<{ id: number; x: number; y: number }[]>([]);
   const [score, setScore] = useState(0);
+  const [reaction, setReaction] = useState<"idle" | "cheer" | "duck">("idle");
   const coinIdRef = useRef(0);
   const loopRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
@@ -43,7 +44,7 @@ const FlowVisualization = () => {
     setTimeout(() => {
       if (fits) {
         playWhoosh();
-        // Spawn coins
+        setReaction("cheer");
         const newCoins = Array.from({ length: 3 }, (_, i) => ({
           id: coinIdRef.current++,
           x: 60 + Math.random() * 20,
@@ -54,8 +55,11 @@ const FlowVisualization = () => {
         setTimeout(() => {
           setCoins(prev => prev.filter(c => !newCoins.find(nc => nc.id === c.id)));
         }, 1200);
+        setTimeout(() => setReaction("idle"), 1800 / speed);
       } else {
         playBonk();
+        setReaction("duck");
+        setTimeout(() => setReaction("idle"), 1200 / speed);
       }
     }, sfxDelay);
     timeoutRef.current = setTimeout(() => {
@@ -212,15 +216,50 @@ const FlowVisualization = () => {
           <span className="text-[10px] font-bold" style={{ color: "hsl(35,80%,30%)" }}>?</span>
         </div>
 
-        {/* LEGO pixel man — standing near the pipe */}
-        <motion.img
-          src={legoPixelMan}
-          alt="Pixel LEGO construction worker"
-          className="absolute bottom-8 w-10 h-10 object-contain"
-          style={{ right: "12%", imageRendering: "pixelated" }}
-          animate={{ y: [0, -2, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-        />
+        {/* LEGO pixel man — reacts to flow */}
+        <motion.div
+          className="absolute bottom-8 flex flex-col items-center"
+          style={{ right: "12%" }}
+          animate={
+            reaction === "cheer"
+              ? { y: [0, -12, 0, -8, 0], rotate: [0, -10, 10, -5, 0] }
+              : reaction === "duck"
+              ? { y: [0, 6], scaleY: [1, 0.7], rotate: [0, 5] }
+              : { y: [0, -2, 0] }
+          }
+          transition={
+            reaction === "idle"
+              ? { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
+              : { duration: 0.5, ease: "easeOut" }
+          }
+        >
+          {reaction === "cheer" && (
+            <motion.span
+              className="text-[10px] font-display font-bold mb-0.5"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{ color: "hsl(48,100%,40%)" }}
+            >
+              YAY!
+            </motion.span>
+          )}
+          {reaction === "duck" && (
+            <motion.span
+              className="text-[10px] font-display font-bold mb-0.5"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              style={{ color: "hsl(358,100%,44%)" }}
+            >
+              EEK!
+            </motion.span>
+          )}
+          <img
+            src={legoPixelMan}
+            alt="Pixel LEGO construction worker"
+            className="w-10 h-10 object-contain"
+            style={{ imageRendering: "pixelated" }}
+          />
+        </motion.div>
 
         {/* LEGO Molecule — pixel art style */}
         <AnimatePresence>
