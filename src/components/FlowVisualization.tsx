@@ -41,8 +41,22 @@ const FlowVisualization = () => {
     setFlowing(true);
     const sfxDelay = fits ? (1200 / speed) : (900 / speed);
     setTimeout(() => {
-      if (fits) playWhoosh();
-      else playBonk();
+      if (fits) {
+        playWhoosh();
+        // Spawn coins
+        const newCoins = Array.from({ length: 3 }, (_, i) => ({
+          id: coinIdRef.current++,
+          x: 60 + Math.random() * 20,
+          y: 20 + i * 15,
+        }));
+        setCoins(prev => [...prev, ...newCoins]);
+        setScore(prev => prev + 10);
+        setTimeout(() => {
+          setCoins(prev => prev.filter(c => !newCoins.find(nc => nc.id === c.id)));
+        }, 1200);
+      } else {
+        playBonk();
+      }
     }, sfxDelay);
     timeoutRef.current = setTimeout(() => {
       setFlowing(false);
