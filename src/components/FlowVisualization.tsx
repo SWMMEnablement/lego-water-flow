@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { playBonk, playWhoosh } from "@/lib/sounds";
 
 const pipeOptions = [
   { key: "tiny", label: '⅜"', diameter: 28, mm: "9.5mm", fits: false },
@@ -34,6 +35,11 @@ const FlowVisualization = () => {
 
   const handleFlow = () => {
     setFlowing(true);
+    const sfxDelay = fits ? (1200 / speed) : (900 / speed);
+    setTimeout(() => {
+      if (fits) playWhoosh();
+      else playBonk();
+    }, sfxDelay);
     timeoutRef.current = setTimeout(() => {
       setFlowing(false);
       if (loopRef.current) {
