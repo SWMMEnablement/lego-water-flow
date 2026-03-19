@@ -44,7 +44,7 @@ const FlowVisualization = () => {
     setTimeout(() => {
       if (fits) {
         playWhoosh();
-        // Spawn coins
+        setReaction("cheer");
         const newCoins = Array.from({ length: 3 }, (_, i) => ({
           id: coinIdRef.current++,
           x: 60 + Math.random() * 20,
@@ -55,8 +55,11 @@ const FlowVisualization = () => {
         setTimeout(() => {
           setCoins(prev => prev.filter(c => !newCoins.find(nc => nc.id === c.id)));
         }, 1200);
+        setTimeout(() => setReaction("idle"), 1800 / speed);
       } else {
         playBonk();
+        setReaction("duck");
+        setTimeout(() => setReaction("idle"), 1200 / speed);
       }
     }, sfxDelay);
     timeoutRef.current = setTimeout(() => {
