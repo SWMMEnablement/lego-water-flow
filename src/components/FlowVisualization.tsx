@@ -45,7 +45,17 @@ const FlowVisualization = () => {
     setTimeout(() => {
       if (fits) {
         playWhoosh();
-        setReaction("cheer");
+        // Molecule hits the man — he splits!
+        const hitDelay = (1600 / speed);
+        setTimeout(() => {
+          setReaction("split");
+          setSplit(true);
+          setTimeout(() => {
+            setSplit(false);
+            setReaction("cheer");
+            setTimeout(() => setReaction("idle"), 1000 / speed);
+          }, 1400 / speed);
+        }, hitDelay);
         const newCoins = Array.from({ length: 3 }, (_, i) => ({
           id: coinIdRef.current++,
           x: 60 + Math.random() * 20,
@@ -56,7 +66,6 @@ const FlowVisualization = () => {
         setTimeout(() => {
           setCoins(prev => prev.filter(c => !newCoins.find(nc => nc.id === c.id)));
         }, 1200);
-        setTimeout(() => setReaction("idle"), 1800 / speed);
       } else {
         playBonk();
         setReaction("duck");
