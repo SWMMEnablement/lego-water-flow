@@ -5,6 +5,7 @@ import BrickCard, { BrickCardHeader, BrickCardBody } from "@/components/BrickCar
 import PipeSizer from "@/components/PipeSizer";
 import LegoStud from "@/components/LegoStud";
 import AssemblyGuide from "@/components/AssemblyGuide";
+import FlowVisualization from "@/components/FlowVisualization";
 
 const snap = {
   initial: { opacity: 0, y: 20 },
@@ -104,6 +105,14 @@ const Index = () => {
                 </p>
               </div>
             </div>
+          </BrickCardBody>
+        </BrickCard>
+
+        {/* Flow Visualization */}
+        <BrickCard variant="default">
+          <BrickCardHeader variant="default">🌊 FLOW SIMULATOR</BrickCardHeader>
+          <BrickCardBody>
+            <FlowVisualization />
           </BrickCardBody>
         </BrickCard>
 
