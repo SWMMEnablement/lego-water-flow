@@ -19,7 +19,8 @@ const FlowVisualization = () => {
   const [speed, setSpeed] = useState<1 | 2 | 3>(1);
   const [coins, setCoins] = useState<{ id: number; x: number; y: number }[]>([]);
   const [score, setScore] = useState(0);
-  const [reaction, setReaction] = useState<"idle" | "cheer" | "duck">("idle");
+  const [reaction, setReaction] = useState<"idle" | "cheer" | "duck" | "split">("idle");
+  const [split, setSplit] = useState(false);
   const coinIdRef = useRef(0);
   const loopRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
@@ -44,7 +45,17 @@ const FlowVisualization = () => {
     setTimeout(() => {
       if (fits) {
         playWhoosh();
-        setReaction("cheer");
+        // Molecule hits the man — he splits!
+        const hitDelay = (1600 / speed);
+        setTimeout(() => {
+          setReaction("split");
+          setSplit(true);
+          setTimeout(() => {
+            setSplit(false);
+            setReaction("cheer");
+            setTimeout(() => setReaction("idle"), 1000 / speed);
+          }, 1400 / speed);
+        }, hitDelay);
         const newCoins = Array.from({ length: 3 }, (_, i) => ({
           id: coinIdRef.current++,
           x: 60 + Math.random() * 20,
@@ -55,7 +66,6 @@ const FlowVisualization = () => {
         setTimeout(() => {
           setCoins(prev => prev.filter(c => !newCoins.find(nc => nc.id === c.id)));
         }, 1200);
-        setTimeout(() => setReaction("idle"), 1800 / speed);
       } else {
         playBonk();
         setReaction("duck");
@@ -217,49 +227,104 @@ const FlowVisualization = () => {
         </div>
 
         {/* LEGO pixel man — reacts to flow */}
-        <motion.div
-          className="absolute bottom-8 flex flex-col items-center"
-          style={{ right: "12%" }}
-          animate={
-            reaction === "cheer"
-              ? { y: [0, -12, 0, -8, 0], rotate: [0, -10, 10, -5, 0] }
-              : reaction === "duck"
-              ? { y: [0, 6], scaleY: [1, 0.7], rotate: [0, 5] }
-              : { y: [0, -2, 0] }
-          }
-          transition={
-            reaction === "idle"
-              ? { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
-              : { duration: 0.5, ease: "easeOut" }
-          }
-        >
-          {reaction === "cheer" && (
-            <motion.span
-              className="text-[10px] font-display font-bold mb-0.5"
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              style={{ color: "hsl(48,100%,40%)" }}
+        <AnimatePresence mode="wait">
+          {!split ? (
+            <motion.div
+              key="whole"
+              className="absolute bottom-8 flex flex-col items-center"
+              style={{ right: "12%" }}
+              animate={
+                reaction === "cheer"
+                  ? { y: [0, -12, 0, -8, 0], rotate: [0, -10, 10, -5, 0] }
+                  : reaction === "duck"
+                  ? { y: [0, 6], scaleY: [1, 0.7], rotate: [0, 5] }
+                  : { y: [0, -2, 0] }
+              }
+              transition={
+                reaction === "idle"
+                  ? { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
+                  : { duration: 0.5, ease: "easeOut" }
+              }
             >
-              YAY!
-            </motion.span>
+              {reaction === "cheer" && (
+                <motion.span
+                  className="text-[10px] font-display font-bold mb-0.5"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{ color: "hsl(48,100%,40%)" }}
+                >
+                  YAY!
+                </motion.span>
+              )}
+              {reaction === "duck" && (
+                <motion.span
+                  className="text-[10px] font-display font-bold mb-0.5"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  style={{ color: "hsl(358,100%,44%)" }}
+                >
+                  EEK!
+                </motion.span>
+              )}
+              <img
+                src={legoPixelMan}
+                alt="Pixel LEGO construction worker"
+                className="w-10 h-10 object-contain"
+                style={{ imageRendering: "pixelated" }}
+              />
+            </motion.div>
+          ) : (
+            <>
+              {/* Split into two smaller versions */}
+              <motion.div
+                key="split-left"
+                className="absolute bottom-8 flex flex-col items-center"
+                style={{ right: "12%" }}
+                initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                animate={{ x: -30, y: -20, rotate: -25, scale: 0.6, opacity: [1, 1, 0.9] }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              >
+                <motion.span
+                  className="text-[8px] font-display font-bold mb-0.5"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  style={{ color: "hsl(211,100%,50%)" }}
+                >
+                  WHOA!
+                </motion.span>
+                <img
+                  src={legoPixelMan}
+                  alt="Mini LEGO man left"
+                  className="w-7 h-7 object-contain"
+                  style={{ imageRendering: "pixelated" }}
+                />
+              </motion.div>
+              <motion.div
+                key="split-right"
+                className="absolute bottom-8 flex flex-col items-center"
+                style={{ right: "12%" }}
+                initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                animate={{ x: 30, y: -15, rotate: 20, scale: 0.6, opacity: [1, 1, 0.9] }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              >
+                <motion.span
+                  className="text-[8px] font-display font-bold mb-0.5"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  style={{ color: "hsl(211,100%,50%)" }}
+                >
+                  OOF!
+                </motion.span>
+                <img
+                  src={legoPixelMan}
+                  alt="Mini LEGO man right"
+                  className="w-7 h-7 object-contain"
+                  style={{ imageRendering: "pixelated" }}
+                />
+              </motion.div>
+            </>
           )}
-          {reaction === "duck" && (
-            <motion.span
-              className="text-[10px] font-display font-bold mb-0.5"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              style={{ color: "hsl(358,100%,44%)" }}
-            >
-              EEK!
-            </motion.span>
-          )}
-          <img
-            src={legoPixelMan}
-            alt="Pixel LEGO construction worker"
-            className="w-10 h-10 object-contain"
-            style={{ imageRendering: "pixelated" }}
-          />
-        </motion.div>
+        </AnimatePresence>
 
         {/* LEGO Molecule — pixel art style */}
         <AnimatePresence>
