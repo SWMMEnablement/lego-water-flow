@@ -56,92 +56,154 @@ const FlowVisualization = () => {
   };
 
   return (
-    <div className="space-y-5">
-      {/* Pipe size toggle */}
+    <div className="space-y-4" style={{ imageRendering: "pixelated" }}>
+      {/* Pipe size toggle — pixel buttons */}
       <div className="flex flex-wrap justify-center gap-2">
         {pipeOptions.map((p) => (
-          <motion.button
+          <button
             key={p.key}
-            whileTap={{ scale: 0.95 }}
             onClick={() => { setPipeSize(p.key); handleStop(); }}
-            className={`rounded-xl border-[3px] px-3 py-2 font-display font-semibold text-xs transition-colors duration-150 ${
+            className={`px-3 py-2 font-display font-bold text-xs transition-colors duration-100 border-b-4 active:border-b-0 active:mt-1 ${
               pipeSize === p.key
                 ? p.fits
-                  ? "border-lego-green bg-primary text-primary-foreground"
-                  : "border-destructive bg-primary text-primary-foreground"
-                : "border-border bg-card text-foreground"
+                  ? "bg-lego-green border-[hsl(140,60%,28%)] text-primary-foreground"
+                  : "bg-destructive border-[hsl(358,100%,32%)] text-destructive-foreground"
+                : "bg-muted border-[hsl(210,20%,78%)] text-foreground"
             }`}
+            style={{ borderRadius: 0 }}
           >
             {p.label} ({p.mm})
-          </motion.button>
+          </button>
         ))}
       </div>
 
-      {/* Speed & loop controls */}
-      <div className="flex justify-center items-center gap-4">
+      {/* Speed & loop — pixel style */}
+      <div className="flex justify-center items-center gap-3">
         <div className="flex items-center gap-1">
-          <span className="text-[10px] font-display text-muted-foreground">Speed:</span>
+          <span className="text-[10px] font-display text-muted-foreground uppercase tracking-wider">Spd:</span>
           {([1, 2, 3] as const).map((s) => (
-            <motion.button
+            <button
               key={s}
-              whileTap={{ scale: 0.9 }}
               onClick={() => setSpeed(s)}
-              className={`w-7 h-7 rounded-lg border-2 font-display font-bold text-[10px] transition-colors ${
+              className={`w-7 h-7 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] transition-colors ${
                 speed === s
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground"
+                  ? "bg-lego-yellow border-[hsl(48,100%,36%)] text-accent-foreground"
+                  : "bg-muted border-[hsl(210,20%,78%)] text-muted-foreground"
               }`}
+              style={{ borderRadius: 0 }}
             >
               {s}×
-            </motion.button>
+            </button>
           ))}
         </div>
-        <motion.button
-          whileTap={{ scale: 0.9 }}
+        <button
           onClick={() => setLoop(!loop)}
-          className={`rounded-lg border-2 px-2.5 py-1 font-display font-semibold text-[10px] transition-colors ${
+          className={`px-2.5 py-1 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] transition-colors ${
             loop
-              ? "border-lego-blue bg-lego-blue text-primary-foreground"
-              : "border-border bg-card text-muted-foreground"
+              ? "bg-lego-blue border-[hsl(211,100%,22%)] text-primary-foreground"
+              : "bg-muted border-[hsl(210,20%,78%)] text-muted-foreground"
           }`}
+          style={{ borderRadius: 0 }}
         >
-          🔁 Loop {loop ? "ON" : "OFF"}
-        </motion.button>
+          ↻ Loop {loop ? "ON" : "OFF"}
+        </button>
       </div>
 
-      {/* Animation stage */}
-      <div className="relative h-40 overflow-hidden rounded-2xl bg-muted/50 border-2 border-border">
-        {/* Pipe walls */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 flex flex-col justify-center pointer-events-none">
+      {/* Game stage — retro platformer look */}
+      <div
+        className="relative h-48 overflow-hidden border-4 border-foreground"
+        style={{
+          borderRadius: 0,
+          background: "linear-gradient(180deg, hsl(195, 80%, 72%) 0%, hsl(195, 70%, 82%) 100%)",
+        }}
+      >
+        {/* Pixel clouds */}
+        <div className="absolute top-4 left-6 flex gap-[2px]" style={{ opacity: 0.7 }}>
+          {[0,1,2,3,4].map(i => (
+            <div key={i} className="w-3 h-3 bg-card" style={{ borderRadius: 0, marginTop: i === 0 || i === 4 ? 3 : i === 2 ? -2 : 0 }} />
+          ))}
+        </div>
+        <div className="absolute top-6 right-10 flex gap-[2px]" style={{ opacity: 0.5 }}>
+          {[0,1,2].map(i => (
+            <div key={i} className="w-2 h-2 bg-card" style={{ borderRadius: 0, marginTop: i === 1 ? -1 : 0 }} />
+          ))}
+        </div>
+
+        {/* Ground — green platform blocks */}
+        <div className="absolute bottom-0 left-0 right-0 h-8 flex">
+          {Array.from({ length: 30 }).map((_, i) => (
+            <div
+              key={i}
+              className="w-4 h-8 border border-[hsl(140,50%,30%)]"
+              style={{
+                borderRadius: 0,
+                background: i % 2 === 0
+                  ? "hsl(100, 50%, 45%)"
+                  : "hsl(100, 50%, 40%)",
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Pipe — pixel art pipe on the ground */}
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-8 flex flex-col items-center">
+          {/* Pipe opening top */}
           <motion.div
             animate={{ height: pipe.diameter }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="relative w-40 mx-auto"
+            className="relative"
+            style={{ width: 140 }}
           >
-            <div className="absolute -top-3 left-0 right-0 h-3 bg-muted-foreground/20 rounded-t-lg" />
-            <div className="absolute -bottom-3 left-0 right-0 h-3 bg-muted-foreground/20 rounded-b-lg" />
-            <div className="absolute inset-0 bg-secondary/80 border-y-2 border-muted-foreground/15" />
-            {flowing && (
+            {/* Pipe walls - pixel blocks */}
+            <div
+              className="absolute -top-2 left-0 right-0 h-2"
+              style={{ borderRadius: 0, background: "hsl(140, 30%, 35%)", borderLeft: "3px solid hsl(140,30%,25%)", borderRight: "3px solid hsl(140,30%,25%)" }}
+            />
+            <div
+              className="absolute -bottom-2 left-0 right-0 h-2"
+              style={{ borderRadius: 0, background: "hsl(140, 30%, 35%)", borderLeft: "3px solid hsl(140,30%,25%)", borderRight: "3px solid hsl(140,30%,25%)" }}
+            />
+            {/* Pipe interior */}
+            <div
+              className="absolute inset-0"
+              style={{
+                borderRadius: 0,
+                background: "hsl(140, 20%, 20%)",
+                borderLeft: "3px solid hsl(140,30%,25%)",
+                borderRight: "3px solid hsl(140,30%,25%)",
+              }}
+            />
+            {/* Water flow effect */}
+            {flowing && fits && (
               <motion.div
                 initial={{ x: "-100%" }}
                 animate={{ x: "100%" }}
                 transition={{ duration, ease: "easeInOut" }}
-                className="absolute inset-0 bg-lego-blue/10"
+                className="absolute inset-0"
+                style={{ borderRadius: 0, background: "hsla(211, 100%, 50%, 0.2)" }}
               />
             )}
           </motion.div>
         </div>
 
-        {/* LEGO Molecule */}
+        {/* Coin block decoration */}
+        <div
+          className="absolute top-10 right-[20%] w-8 h-8 border-2 border-[hsl(35,80%,35%)] flex items-center justify-center"
+          style={{ borderRadius: 0, background: "hsl(35, 70%, 55%)" }}
+        >
+          <span className="text-[10px] font-bold" style={{ color: "hsl(35,80%,30%)" }}>?</span>
+        </div>
+
+        {/* LEGO Molecule — pixel art style */}
         <AnimatePresence>
           {flowing && (
             <motion.div
-              className="absolute top-1/2 -translate-y-1/2 flex items-end gap-[1px]"
+              className="absolute bottom-10 flex items-end gap-0"
               initial={{ left: -80 }}
               animate={
                 fits
                   ? { left: ["-80px", "45%", "calc(100% + 80px)"] }
-                  : { left: ["-80px", "38%", "38%"], rotate: [0, 0, 8, -8, 5, -5, 0] }
+                  : { left: ["-80px", "36%", "36%"], rotate: [0, 0, 8, -8, 5, -5, 0] }
               }
               transition={
                 fits
@@ -149,69 +211,72 @@ const FlowVisualization = () => {
                   : { duration, ease: "easeOut" }
               }
             >
-              <div className="flex flex-col items-center" style={{ transform: "rotate(15deg)", transformOrigin: "right bottom" }}>
-                <div className="w-3 h-3 rounded-full bg-card border-2 border-border shadow-[inset_0_-1px_2px_rgba(0,0,0,0.1)]" />
-                <div className="w-[2px] h-3 bg-muted-foreground/30 rounded-full" />
+              {/* H left */}
+              <div className="flex flex-col items-center">
+                <div className="w-3 h-3 bg-card border border-[hsl(210,20%,80%)]" style={{ borderRadius: 0 }} />
+                <div className="w-[2px] h-2 bg-muted-foreground/40" />
               </div>
+              {/* O center */}
               <div className="relative">
-                <div className="w-10 h-7 bg-lego-red rounded-md shadow-[0_2px_0_0_rgba(0,0,0,0.15)]" />
-                <div className="absolute -top-1 left-1 flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-lego-red shadow-[inset_0_-1px_2px_rgba(0,0,0,0.2)]" />
-                  <div className="w-3 h-3 rounded-full bg-lego-red shadow-[inset_0_-1px_2px_rgba(0,0,0,0.2)]" />
+                <div className="w-10 h-7 bg-lego-red border-b-[3px] border-[hsl(358,100%,32%)]" style={{ borderRadius: 0 }} />
+                <div className="absolute -top-[3px] left-1 flex gap-2">
+                  <div className="w-3 h-3 bg-lego-red border border-[hsl(358,100%,36%)]" style={{ borderRadius: 0 }} />
+                  <div className="w-3 h-3 bg-lego-red border border-[hsl(358,100%,36%)]" style={{ borderRadius: 0 }} />
                 </div>
               </div>
-              <div className="flex flex-col items-center" style={{ transform: "rotate(-15deg)", transformOrigin: "left bottom" }}>
-                <div className="w-3 h-3 rounded-full bg-card border-2 border-border shadow-[inset_0_-1px_2px_rgba(0,0,0,0.1)]" />
-                <div className="w-[2px] h-3 bg-muted-foreground/30 rounded-full" />
+              {/* H right */}
+              <div className="flex flex-col items-center">
+                <div className="w-3 h-3 bg-card border border-[hsl(210,20%,80%)]" style={{ borderRadius: 0 }} />
+                <div className="w-[2px] h-2 bg-muted-foreground/40" />
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Stuck indicator */}
+        {/* Stuck indicator — pixel text */}
         <AnimatePresence>
           {flowing && !fits && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ delay: 0.9 / speed }}
-              className="absolute top-2 right-3 font-display font-bold text-destructive text-sm"
+              className="absolute top-2 right-3 font-display font-bold text-destructive text-sm tracking-wider"
             >
-              STUCK! 🧱💥
+              STUCK!
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Fit indicator */}
-        <div className={`absolute top-2 left-3 text-[10px] font-display font-bold ${fits ? "text-lego-green" : "text-destructive"}`}>
-          {fits ? "✅ FITS" : "❌ TOO SMALL"}
+        <div className={`absolute top-2 left-3 text-[10px] font-display font-bold tracking-wider ${fits ? "text-lego-green" : "text-destructive"}`}>
+          {fits ? "FITS ✓" : "TOO SMALL ✗"}
         </div>
 
-        <div className="absolute bottom-2 left-3 text-[10px] font-body text-muted-foreground">
-          Pipe: {pipe.label} ({pipe.mm})
+        <div className="absolute bottom-10 left-3 text-[9px] font-display text-foreground/60 tracking-wider">
+          {pipe.label} ({pipe.mm})
         </div>
       </div>
 
-      {/* Flow button */}
+      {/* Action buttons — pixel style */}
       <div className="flex justify-center gap-3">
-        <motion.button
-          whileTap={{ scale: 0.95 }}
+        <button
           onClick={handleFlow}
           disabled={flowing}
-          className="rounded-xl border-[3px] border-lego-yellow bg-lego-yellow px-6 py-2.5 font-display font-bold text-sm text-accent-foreground disabled:opacity-40 transition-colors duration-150"
+          className="bg-lego-yellow border-b-4 border-[hsl(48,100%,36%)] px-6 py-2.5 font-display font-bold text-sm text-accent-foreground disabled:opacity-40 active:border-b-0 active:mt-1 transition-colors"
+          style={{ borderRadius: 0 }}
         >
-          {flowing ? "Flowing..." : "💧 Send It!"}
-        </motion.button>
+          {flowing ? "Flowing..." : "▸ Send It!"}
+        </button>
         {flowing && (
           <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             onClick={handleStop}
-            className="rounded-xl border-[3px] border-destructive bg-destructive px-4 py-2.5 font-display font-bold text-sm text-destructive-foreground transition-colors duration-150"
+            className="bg-destructive border-b-4 border-[hsl(358,100%,32%)] px-4 py-2.5 font-display font-bold text-sm text-destructive-foreground active:border-b-0 active:mt-1 transition-colors"
+            style={{ borderRadius: 0 }}
           >
-            Stop
+            ■ Stop
           </motion.button>
         )}
       </div>
