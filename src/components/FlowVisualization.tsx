@@ -167,22 +167,46 @@ const FlowVisualization = () => {
     <div className="space-y-4" style={{ imageRendering: "pixelated" }}>
       {/* Pipe size toggle — pixel buttons */}
       <div className="flex flex-wrap justify-center gap-2">
-        {pipeOptions.map((p) => (
-          <button
-            key={p.key}
-            onClick={() => { setPipeSize(p.key); handleStop(); }}
-            className={`px-3 py-2 font-display font-bold text-xs transition-colors duration-100 border-b-4 active:border-b-0 active:mt-1 ${
-              pipeSize === p.key
-                ? p.fits
-                  ? "bg-lego-green border-[hsl(140,60%,28%)] text-primary-foreground"
-                  : "bg-destructive border-[hsl(358,100%,32%)] text-destructive-foreground"
-                : "bg-muted border-[hsl(210,20%,78%)] text-foreground"
-            }`}
-            style={{ borderRadius: 0 }}
-          >
-            {p.label} ({p.mm})
-          </button>
-        ))}
+        {pipeOptions.map((p) => {
+          const result = autoResults[p.key];
+          const isCurrent = autoCurrent === p.key;
+          const ring = isCurrent
+            ? "ring-2 ring-offset-1 ring-lego-yellow"
+            : result === "split"
+            ? "ring-2 ring-offset-1 ring-[hsl(48,100%,50%)]"
+            : result === "stuck"
+            ? "ring-2 ring-offset-1 ring-destructive"
+            : "";
+          return (
+            <button
+              key={p.key}
+              onClick={() => { setPipeSize(p.key); handleStop(); stopAutoTest(); }}
+              disabled={autoTest}
+              className={`relative px-3 py-2 font-display font-bold text-xs transition-colors duration-100 border-b-4 active:border-b-0 active:mt-1 disabled:opacity-70 ${
+                pipeSize === p.key
+                  ? p.fits
+                    ? "bg-lego-green border-[hsl(140,60%,28%)] text-primary-foreground"
+                    : "bg-destructive border-[hsl(358,100%,32%)] text-destructive-foreground"
+                  : "bg-muted border-[hsl(210,20%,78%)] text-foreground"
+              } ${ring}`}
+              style={{ borderRadius: 0 }}
+            >
+              {p.label} ({p.mm})
+              {result && (
+                <span
+                  className="absolute -top-2 -right-2 px-1 font-display font-bold text-[8px] border border-foreground"
+                  style={{
+                    background: result === "split" ? "hsl(48,100%,55%)" : "hsl(358,100%,55%)",
+                    color: result === "split" ? "hsl(35,80%,25%)" : "hsl(0,0%,100%)",
+                    borderRadius: 0,
+                  }}
+                >
+                  {result === "split" ? "✂" : "✗"}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Speed & loop — pixel style */}
