@@ -12,12 +12,21 @@ const pipeOptions = [
 
 type PipeKey = (typeof pipeOptions)[number]["key"];
 
+type HitboxConfig = { position: number; window: number };
+const defaultHitboxes: Record<PipeKey, HitboxConfig> = {
+  tiny: { position: 70, window: 12 },
+  small: { position: 70, window: 12 },
+  medium: { position: 75, window: 14 },
+  large: { position: 80, window: 18 },
+};
+
 const FlowVisualization = () => {
   const [flowing, setFlowing] = useState(false);
   const [pipeSize, setPipeSize] = useState<PipeKey>("small");
   const [loop, setLoop] = useState(false);
   const [speed, setSpeed] = useState<1 | 2 | 3>(1);
-  const [splitDelay, setSplitDelay] = useState(1.0);
+  const [hitboxes, setHitboxes] = useState<Record<PipeKey, HitboxConfig>>(defaultHitboxes);
+  const [showHitbox, setShowHitbox] = useState(true);
   const [reassembleDuration, setReassembleDuration] = useState(1.0);
   const [coins, setCoins] = useState<{ id: number; x: number; y: number }[]>([]);
   const [score, setScore] = useState(0);
@@ -31,6 +40,19 @@ const FlowVisualization = () => {
   const pipe = pipeOptions.find((p) => p.key === pipeSize)!;
   const fits = pipe.fits;
   const duration = fits ? 2 / speed : 1 / speed;
+  const hitbox = hitboxes[pipeSize];
+
+  // Convert hitbox position (% of stage) to trigger time (ms) using molecule animation timeline.
+  // Molecule path: [-13%, 45%, 113%] at times [0, 0.4, 1] of `duration`.
+  const computeHitDelay = (posPct: number) => {
+    const ms = duration * 1000;
+    if (posPct <= 45) {
+      const t = (posPct - -13) / (45 - -13); // 0..1 in phase A
+      return Math.max(0, t) * 0.4 * ms;
+    }
+    const t = (posPct - 45) / (113 - 45); // 0..1 in phase B
+    return (0.4 + Math.min(1, t) * 0.6) * ms;
+  };
 
   useEffect(() => {
     loopRef.current = loop;
@@ -46,21 +68,14 @@ const FlowVisualization = () => {
     setFlowing(true);
     setStats(s => ({ ...s, runs: s.runs + 1 }));
     const sfxDelay = fits ? (1200 / speed) : (900 / speed);
-    setTimeout(() => {
-      if (fits) {
-        setStats(s => ({ ...s, passes: s.passes + 1 }));
+    if (fits) {
+      // Trigger split when molecule enters the hitbox window (measured from flow start).
+      const hitDelay = computeHitDelay(hitbox.position);
+      setTimeout(() => {
+        setStats(s => ({ ...s, passes: s.passes + 1, splits: s.splits + 1 }));
         playWhoosh();
-        const hitDelay = splitDelay * 1000 / speed;
-        setTimeout(() => {
-          setStats(s => ({ ...s, splits: s.splits + 1 }));
-          setReaction("split");
-          setSplit(true);
-          setTimeout(() => {
-            setSplit(false);
-            setReaction("cheer");
-            setTimeout(() => setReaction("idle"), 1000 / speed);
-          }, reassembleDuration * 1000 / speed);
-        }, hitDelay);
+        setReaction("split");
+        setSplit(true);
         const newCoins = Array.from({ length: 3 }, (_, i) => ({
           id: coinIdRef.current++,
           x: 60 + Math.random() * 20,
@@ -72,13 +87,20 @@ const FlowVisualization = () => {
         setTimeout(() => {
           setCoins(prev => prev.filter(c => !newCoins.find(nc => nc.id === c.id)));
         }, 1200);
-      } else {
+        setTimeout(() => {
+          setSplit(false);
+          setReaction("cheer");
+          setTimeout(() => setReaction("idle"), 1000 / speed);
+        }, reassembleDuration * 1000 / speed);
+      }, hitDelay);
+    } else {
+      setTimeout(() => {
         setStats(s => ({ ...s, stucks: s.stucks + 1 }));
         playBonk();
         setReaction("duck");
         setTimeout(() => setReaction("idle"), 1200 / speed);
-      }
-    }, sfxDelay);
+      }, sfxDelay);
+    }
     timeoutRef.current = setTimeout(() => {
       setFlowing(false);
       if (loopRef.current) {
@@ -148,43 +170,68 @@ const FlowVisualization = () => {
         </button>
       </div>
 
-      {/* Split timing controls — pixel style */}
-      <div className="flex justify-center items-center gap-4">
+      {/* Hitbox controls — per-pipe-size, pixel style */}
+      <div className="flex flex-wrap justify-center items-center gap-3">
+        <span className="text-[10px] font-display text-muted-foreground uppercase tracking-wider">
+          Hit ({pipe.label}):
+        </span>
         <div className="flex items-center gap-1">
-          <span className="text-[10px] font-display text-muted-foreground uppercase tracking-wider">Split:</span>
-          <button
-            onClick={() => setSplitDelay(d => Math.max(0.2, +(d - 0.1).toFixed(1)))}
-            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
-            style={{ borderRadius: 0 }}
-          >
-            −
-          </button>
-          <span className="w-8 text-center font-display font-bold text-[10px] text-foreground">{splitDelay.toFixed(1)}s</span>
-          <button
-            onClick={() => setSplitDelay(d => Math.min(2.0, +(d + 0.1).toFixed(1)))}
-            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
-            style={{ borderRadius: 0 }}
-          >
-            +
-          </button>
+          <span className="text-[9px] font-display text-muted-foreground uppercase">Pos</span>
+          <input
+            type="range"
+            min={20}
+            max={110}
+            step={1}
+            value={hitbox.position}
+            onChange={(e) => setHitboxes(h => ({ ...h, [pipeSize]: { ...h[pipeSize], position: +e.target.value } }))}
+            className="w-24 accent-lego-blue"
+          />
+          <span className="w-8 text-center font-display font-bold text-[10px] text-foreground">{hitbox.position}%</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-[10px] font-display text-muted-foreground uppercase tracking-wider">Reasm:</span>
+          <span className="text-[9px] font-display text-muted-foreground uppercase">Win</span>
+          <input
+            type="range"
+            min={4}
+            max={40}
+            step={1}
+            value={hitbox.window}
+            onChange={(e) => setHitboxes(h => ({ ...h, [pipeSize]: { ...h[pipeSize], window: +e.target.value } }))}
+            className="w-20 accent-lego-yellow"
+          />
+          <span className="w-8 text-center font-display font-bold text-[10px] text-foreground">{hitbox.window}%</span>
+        </div>
+        <button
+          onClick={() => setShowHitbox(v => !v)}
+          className={`px-2 py-1 font-display font-bold text-[9px] border-b-[3px] active:border-b-0 active:mt-[3px] transition-colors ${
+            showHitbox
+              ? "bg-lego-yellow border-[hsl(48,100%,36%)] text-accent-foreground"
+              : "bg-muted border-[hsl(210,20%,78%)] text-muted-foreground"
+          }`}
+          style={{ borderRadius: 0 }}
+        >
+          {showHitbox ? "👁 Show" : "Hide"}
+        </button>
+        <button
+          onClick={() => setHitboxes(h => ({ ...h, [pipeSize]: defaultHitboxes[pipeSize] }))}
+          className="px-2 py-1 font-display font-bold text-[9px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-muted-foreground transition-colors"
+          style={{ borderRadius: 0 }}
+        >
+          Reset
+        </button>
+        <div className="flex items-center gap-1">
+          <span className="text-[9px] font-display text-muted-foreground uppercase">Reasm</span>
           <button
             onClick={() => setReassembleDuration(d => Math.max(0.2, +(d - 0.1).toFixed(1)))}
-            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
+            className="w-5 h-5 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
             style={{ borderRadius: 0 }}
-          >
-            −
-          </button>
+          >−</button>
           <span className="w-8 text-center font-display font-bold text-[10px] text-foreground">{reassembleDuration.toFixed(1)}s</span>
           <button
             onClick={() => setReassembleDuration(d => Math.min(2.0, +(d + 0.1).toFixed(1)))}
-            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
+            className="w-5 h-5 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
             style={{ borderRadius: 0 }}
-          >
-            +
-          </button>
+          >+</button>
         </div>
       </div>
 
@@ -207,6 +254,26 @@ const FlowVisualization = () => {
             <div key={i} className="w-2 h-2 bg-card" style={{ borderRadius: 0, marginTop: i === 1 ? -1 : 0 }} />
           ))}
         </div>
+
+        {/* Hitbox visualizer — band where split triggers */}
+        {showHitbox && fits && (
+          <div
+            className="absolute top-0 bottom-8 pointer-events-none border-x-2 border-dashed"
+            style={{
+              left: `${hitbox.position - hitbox.window / 2}%`,
+              width: `${hitbox.window}%`,
+              background: "hsla(48,100%,55%,0.15)",
+              borderColor: "hsla(48,100%,45%,0.7)",
+            }}
+          >
+            <div
+              className="absolute -top-0.5 left-1/2 -translate-x-1/2 px-1 font-display font-bold text-[8px] tracking-wider"
+              style={{ background: "hsl(48,100%,55%)", color: "hsl(35,80%,25%)", borderRadius: 0 }}
+            >
+              HIT
+            </div>
+          </div>
+        )}
 
         {/* Ground — green platform blocks */}
         <div className="absolute bottom-0 left-0 right-0 h-8 flex">
