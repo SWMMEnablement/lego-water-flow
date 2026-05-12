@@ -170,43 +170,68 @@ const FlowVisualization = () => {
         </button>
       </div>
 
-      {/* Split timing controls — pixel style */}
-      <div className="flex justify-center items-center gap-4">
+      {/* Hitbox controls — per-pipe-size, pixel style */}
+      <div className="flex flex-wrap justify-center items-center gap-3">
+        <span className="text-[10px] font-display text-muted-foreground uppercase tracking-wider">
+          Hit ({pipe.label}):
+        </span>
         <div className="flex items-center gap-1">
-          <span className="text-[10px] font-display text-muted-foreground uppercase tracking-wider">Split:</span>
-          <button
-            onClick={() => setSplitDelay(d => Math.max(0.2, +(d - 0.1).toFixed(1)))}
-            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
-            style={{ borderRadius: 0 }}
-          >
-            −
-          </button>
-          <span className="w-8 text-center font-display font-bold text-[10px] text-foreground">{splitDelay.toFixed(1)}s</span>
-          <button
-            onClick={() => setSplitDelay(d => Math.min(2.0, +(d + 0.1).toFixed(1)))}
-            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
-            style={{ borderRadius: 0 }}
-          >
-            +
-          </button>
+          <span className="text-[9px] font-display text-muted-foreground uppercase">Pos</span>
+          <input
+            type="range"
+            min={20}
+            max={110}
+            step={1}
+            value={hitbox.position}
+            onChange={(e) => setHitboxes(h => ({ ...h, [pipeSize]: { ...h[pipeSize], position: +e.target.value } }))}
+            className="w-24 accent-lego-blue"
+          />
+          <span className="w-8 text-center font-display font-bold text-[10px] text-foreground">{hitbox.position}%</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-[10px] font-display text-muted-foreground uppercase tracking-wider">Reasm:</span>
+          <span className="text-[9px] font-display text-muted-foreground uppercase">Win</span>
+          <input
+            type="range"
+            min={4}
+            max={40}
+            step={1}
+            value={hitbox.window}
+            onChange={(e) => setHitboxes(h => ({ ...h, [pipeSize]: { ...h[pipeSize], window: +e.target.value } }))}
+            className="w-20 accent-lego-yellow"
+          />
+          <span className="w-8 text-center font-display font-bold text-[10px] text-foreground">{hitbox.window}%</span>
+        </div>
+        <button
+          onClick={() => setShowHitbox(v => !v)}
+          className={`px-2 py-1 font-display font-bold text-[9px] border-b-[3px] active:border-b-0 active:mt-[3px] transition-colors ${
+            showHitbox
+              ? "bg-lego-yellow border-[hsl(48,100%,36%)] text-accent-foreground"
+              : "bg-muted border-[hsl(210,20%,78%)] text-muted-foreground"
+          }`}
+          style={{ borderRadius: 0 }}
+        >
+          {showHitbox ? "👁 Show" : "Hide"}
+        </button>
+        <button
+          onClick={() => setHitboxes(h => ({ ...h, [pipeSize]: defaultHitboxes[pipeSize] }))}
+          className="px-2 py-1 font-display font-bold text-[9px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-muted-foreground transition-colors"
+          style={{ borderRadius: 0 }}
+        >
+          Reset
+        </button>
+        <div className="flex items-center gap-1">
+          <span className="text-[9px] font-display text-muted-foreground uppercase">Reasm</span>
           <button
             onClick={() => setReassembleDuration(d => Math.max(0.2, +(d - 0.1).toFixed(1)))}
-            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
+            className="w-5 h-5 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
             style={{ borderRadius: 0 }}
-          >
-            −
-          </button>
+          >−</button>
           <span className="w-8 text-center font-display font-bold text-[10px] text-foreground">{reassembleDuration.toFixed(1)}s</span>
           <button
             onClick={() => setReassembleDuration(d => Math.min(2.0, +(d + 0.1).toFixed(1)))}
-            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
+            className="w-5 h-5 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
             style={{ borderRadius: 0 }}
-          >
-            +
-          </button>
+          >+</button>
         </div>
       </div>
 
