@@ -44,12 +44,15 @@ const FlowVisualization = () => {
 
   const handleFlow = () => {
     setFlowing(true);
+    setStats(s => ({ ...s, runs: s.runs + 1 }));
     const sfxDelay = fits ? (1200 / speed) : (900 / speed);
     setTimeout(() => {
       if (fits) {
+        setStats(s => ({ ...s, passes: s.passes + 1 }));
         playWhoosh();
         const hitDelay = splitDelay * 1000 / speed;
         setTimeout(() => {
+          setStats(s => ({ ...s, splits: s.splits + 1 }));
           setReaction("split");
           setSplit(true);
           setTimeout(() => {
@@ -70,6 +73,7 @@ const FlowVisualization = () => {
           setCoins(prev => prev.filter(c => !newCoins.find(nc => nc.id === c.id)));
         }, 1200);
       } else {
+        setStats(s => ({ ...s, stucks: s.stucks + 1 }));
         playBonk();
         setReaction("duck");
         setTimeout(() => setReaction("idle"), 1200 / speed);
