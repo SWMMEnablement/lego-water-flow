@@ -33,9 +33,14 @@ const FlowVisualization = () => {
   const [reaction, setReaction] = useState<"idle" | "cheer" | "duck" | "split">("idle");
   const [split, setSplit] = useState(false);
   const [stats, setStats] = useState({ runs: 0, passes: 0, stucks: 0, splits: 0 });
+  const [autoTest, setAutoTest] = useState(false);
+  const [autoResults, setAutoResults] = useState<Partial<Record<PipeKey, "split" | "stuck">>>({});
+  const [autoCurrent, setAutoCurrent] = useState<PipeKey | null>(null);
   const coinIdRef = useRef(0);
   const loopRef = useRef(false);
+  const autoRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const autoTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const pipe = pipeOptions.find((p) => p.key === pipeSize)!;
   const fits = pipe.fits;
@@ -116,26 +121,92 @@ const FlowVisualization = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
+  // Auto-test sequence: cycles through ⅜", ½", ¾", 1" and records split vs stuck.
+  const autoSequence: PipeKey[] = ["small", "medium", "large", "tiny"];
+
+  const stopAutoTest = () => {
+    autoRef.current = false;
+    setAutoTest(false);
+    setAutoCurrent(null);
+    if (autoTimeoutRef.current) clearTimeout(autoTimeoutRef.current);
+  };
+
+  const runAutoTest = () => {
+    handleStop();
+    setAutoResults({});
+    setAutoTest(true);
+    autoRef.current = true;
+
+    const stepDuration = 2800 / speed; // enough time for fits flow + reassemble
+    autoSequence.forEach((key, i) => {
+      autoTimeoutRef.current = setTimeout(() => {
+        if (!autoRef.current) return;
+        const target = pipeOptions.find(p => p.key === key)!;
+        setPipeSize(key);
+        setAutoCurrent(key);
+        // Defer flow one tick so pipeSize state applies before handleFlow reads it.
+        setTimeout(() => {
+          if (!autoRef.current) return;
+          // Mirror handleFlow but capture result for this pipe.
+          setAutoResults(r => ({ ...r, [key]: target.fits ? "split" : "stuck" }));
+          handleFlow();
+        }, 50);
+      }, i * stepDuration);
+    });
+
+    autoTimeoutRef.current = setTimeout(() => {
+      autoRef.current = false;
+      setAutoTest(false);
+      setAutoCurrent(null);
+    }, autoSequence.length * stepDuration);
+  };
+
+  useEffect(() => () => { if (autoTimeoutRef.current) clearTimeout(autoTimeoutRef.current); }, []);
+
   return (
     <div className="space-y-4" style={{ imageRendering: "pixelated" }}>
       {/* Pipe size toggle — pixel buttons */}
       <div className="flex flex-wrap justify-center gap-2">
-        {pipeOptions.map((p) => (
-          <button
-            key={p.key}
-            onClick={() => { setPipeSize(p.key); handleStop(); }}
-            className={`px-3 py-2 font-display font-bold text-xs transition-colors duration-100 border-b-4 active:border-b-0 active:mt-1 ${
-              pipeSize === p.key
-                ? p.fits
-                  ? "bg-lego-green border-[hsl(140,60%,28%)] text-primary-foreground"
-                  : "bg-destructive border-[hsl(358,100%,32%)] text-destructive-foreground"
-                : "bg-muted border-[hsl(210,20%,78%)] text-foreground"
-            }`}
-            style={{ borderRadius: 0 }}
-          >
-            {p.label} ({p.mm})
-          </button>
-        ))}
+        {pipeOptions.map((p) => {
+          const result = autoResults[p.key];
+          const isCurrent = autoCurrent === p.key;
+          const ring = isCurrent
+            ? "ring-2 ring-offset-1 ring-lego-yellow"
+            : result === "split"
+            ? "ring-2 ring-offset-1 ring-[hsl(48,100%,50%)]"
+            : result === "stuck"
+            ? "ring-2 ring-offset-1 ring-destructive"
+            : "";
+          return (
+            <button
+              key={p.key}
+              onClick={() => { setPipeSize(p.key); handleStop(); stopAutoTest(); }}
+              disabled={autoTest}
+              className={`relative px-3 py-2 font-display font-bold text-xs transition-colors duration-100 border-b-4 active:border-b-0 active:mt-1 disabled:opacity-70 ${
+                pipeSize === p.key
+                  ? p.fits
+                    ? "bg-lego-green border-[hsl(140,60%,28%)] text-primary-foreground"
+                    : "bg-destructive border-[hsl(358,100%,32%)] text-destructive-foreground"
+                  : "bg-muted border-[hsl(210,20%,78%)] text-foreground"
+              } ${ring}`}
+              style={{ borderRadius: 0 }}
+            >
+              {p.label} ({p.mm})
+              {result && (
+                <span
+                  className="absolute -top-2 -right-2 px-1 font-display font-bold text-[8px] border border-foreground"
+                  style={{
+                    background: result === "split" ? "hsl(48,100%,55%)" : "hsl(358,100%,55%)",
+                    color: result === "split" ? "hsl(35,80%,25%)" : "hsl(0,0%,100%)",
+                    borderRadius: 0,
+                  }}
+                >
+                  {result === "split" ? "✂" : "✗"}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Speed & loop — pixel style */}
@@ -159,7 +230,8 @@ const FlowVisualization = () => {
         </div>
         <button
           onClick={() => setLoop(!loop)}
-          className={`px-2.5 py-1 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] transition-colors ${
+          disabled={autoTest}
+          className={`px-2.5 py-1 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] transition-colors disabled:opacity-50 ${
             loop
               ? "bg-lego-blue border-[hsl(211,100%,22%)] text-primary-foreground"
               : "bg-muted border-[hsl(210,20%,78%)] text-muted-foreground"
@@ -167,6 +239,17 @@ const FlowVisualization = () => {
           style={{ borderRadius: 0 }}
         >
           ↻ Loop {loop ? "ON" : "OFF"}
+        </button>
+        <button
+          onClick={() => (autoTest ? stopAutoTest() : runAutoTest())}
+          className={`px-2.5 py-1 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] transition-colors ${
+            autoTest
+              ? "bg-destructive border-[hsl(358,100%,32%)] text-destructive-foreground"
+              : "bg-lego-yellow border-[hsl(48,100%,36%)] text-accent-foreground"
+          }`}
+          style={{ borderRadius: 0 }}
+        >
+          {autoTest ? "■ Stop Test" : "▶ Auto-Test"}
         </button>
       </div>
 
