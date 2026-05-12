@@ -63,6 +63,7 @@ const FlowVisualization = () => {
         }));
         setCoins(prev => [...prev, ...newCoins]);
         setScore(prev => prev + 10);
+        playCoin();
         setTimeout(() => {
           setCoins(prev => prev.filter(c => !newCoins.find(nc => nc.id === c.id)));
         }, 1200);
