@@ -33,9 +33,14 @@ const FlowVisualization = () => {
   const [reaction, setReaction] = useState<"idle" | "cheer" | "duck" | "split">("idle");
   const [split, setSplit] = useState(false);
   const [stats, setStats] = useState({ runs: 0, passes: 0, stucks: 0, splits: 0 });
+  const [autoTest, setAutoTest] = useState(false);
+  const [autoResults, setAutoResults] = useState<Partial<Record<PipeKey, "split" | "stuck">>>({});
+  const [autoCurrent, setAutoCurrent] = useState<PipeKey | null>(null);
   const coinIdRef = useRef(0);
   const loopRef = useRef(false);
+  const autoRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const autoTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const pipe = pipeOptions.find((p) => p.key === pipeSize)!;
   const fits = pipe.fits;
