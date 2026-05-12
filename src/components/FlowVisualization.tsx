@@ -230,7 +230,8 @@ const FlowVisualization = () => {
         </div>
         <button
           onClick={() => setLoop(!loop)}
-          className={`px-2.5 py-1 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] transition-colors ${
+          disabled={autoTest}
+          className={`px-2.5 py-1 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] transition-colors disabled:opacity-50 ${
             loop
               ? "bg-lego-blue border-[hsl(211,100%,22%)] text-primary-foreground"
               : "bg-muted border-[hsl(210,20%,78%)] text-muted-foreground"
@@ -238,6 +239,17 @@ const FlowVisualization = () => {
           style={{ borderRadius: 0 }}
         >
           ↻ Loop {loop ? "ON" : "OFF"}
+        </button>
+        <button
+          onClick={() => (autoTest ? stopAutoTest() : runAutoTest())}
+          className={`px-2.5 py-1 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] transition-colors ${
+            autoTest
+              ? "bg-destructive border-[hsl(358,100%,32%)] text-destructive-foreground"
+              : "bg-lego-yellow border-[hsl(48,100%,36%)] text-accent-foreground"
+          }`}
+          style={{ borderRadius: 0 }}
+        >
+          {autoTest ? "■ Stop Test" : "▶ Auto-Test"}
         </button>
       </div>
 
