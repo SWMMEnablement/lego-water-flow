@@ -121,6 +121,48 @@ const FlowVisualization = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
+  // Auto-test sequence: cycles through ⅜", ½", ¾", 1" and records split vs stuck.
+  const autoSequence: PipeKey[] = ["small", "medium", "large", "tiny"];
+
+  const stopAutoTest = () => {
+    autoRef.current = false;
+    setAutoTest(false);
+    setAutoCurrent(null);
+    if (autoTimeoutRef.current) clearTimeout(autoTimeoutRef.current);
+  };
+
+  const runAutoTest = () => {
+    handleStop();
+    setAutoResults({});
+    setAutoTest(true);
+    autoRef.current = true;
+
+    const stepDuration = 2800 / speed; // enough time for fits flow + reassemble
+    autoSequence.forEach((key, i) => {
+      autoTimeoutRef.current = setTimeout(() => {
+        if (!autoRef.current) return;
+        const target = pipeOptions.find(p => p.key === key)!;
+        setPipeSize(key);
+        setAutoCurrent(key);
+        // Defer flow one tick so pipeSize state applies before handleFlow reads it.
+        setTimeout(() => {
+          if (!autoRef.current) return;
+          // Mirror handleFlow but capture result for this pipe.
+          setAutoResults(r => ({ ...r, [key]: target.fits ? "split" : "stuck" }));
+          handleFlow();
+        }, 50);
+      }, i * stepDuration);
+    });
+
+    autoTimeoutRef.current = setTimeout(() => {
+      autoRef.current = false;
+      setAutoTest(false);
+      setAutoCurrent(null);
+    }, autoSequence.length * stepDuration);
+  };
+
+  useEffect(() => () => { if (autoTimeoutRef.current) clearTimeout(autoTimeoutRef.current); }, []);
+
   return (
     <div className="space-y-4" style={{ imageRendering: "pixelated" }}>
       {/* Pipe size toggle — pixel buttons */}
