@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { playBonk, playWhoosh } from "@/lib/sounds";
+import { playBonk, playWhoosh, playCoin } from "@/lib/sounds";
 import legoPixelMan from "@/assets/lego-pixel-man.png";
 
 const pipeOptions = [
