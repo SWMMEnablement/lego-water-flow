@@ -38,3 +38,25 @@ export const playWhoosh = () => {
   noise.start();
   noise.stop(ac.currentTime + 0.4);
 };
+
+export const playCoin = () => {
+  const ac = ctx();
+  const osc = ac.createOscillator();
+  const gain = ac.createGain();
+  osc.connect(gain);
+  gain.connect(ac.destination);
+
+  const now = ac.currentTime;
+  osc.type = "sine";
+
+  // First note — bright ping
+  osc.frequency.setValueAtTime(988, now);
+  osc.frequency.setValueAtTime(1319, now + 0.06);
+
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.25, now + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+  osc.start(now);
+  osc.stop(now + 0.4);
+};

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { playBonk, playWhoosh } from "@/lib/sounds";
+import { playBonk, playWhoosh, playCoin } from "@/lib/sounds";
 import legoPixelMan from "@/assets/lego-pixel-man.png";
 
 const pipeOptions = [
@@ -63,6 +63,7 @@ const FlowVisualization = () => {
         }));
         setCoins(prev => [...prev, ...newCoins]);
         setScore(prev => prev + 10);
+        playCoin();
         setTimeout(() => {
           setCoins(prev => prev.filter(c => !newCoins.find(nc => nc.id === c.id)));
         }, 1200);
