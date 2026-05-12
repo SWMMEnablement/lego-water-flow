@@ -322,13 +322,71 @@ const FlowVisualization = () => {
             </motion.div>
           ) : (
             <>
-              {/* Split into two smaller versions */}
+              {/* Burst particles — LEGO bits + sparkles */}
+              {Array.from({ length: 14 }).map((_, i) => {
+                const angle = (i / 14) * Math.PI * 2 + Math.random() * 0.4;
+                const dist = 35 + Math.random() * 35;
+                const dx = Math.cos(angle) * dist;
+                const dy = Math.sin(angle) * dist - 10;
+                const isSparkle = i % 3 === 0;
+                const colors = ["hsl(48,100%,55%)", "hsl(358,100%,55%)", "hsl(211,100%,55%)", "hsl(140,60%,50%)", "hsl(0,0%,100%)"];
+                const color = isSparkle ? "hsl(48,100%,75%)" : colors[i % colors.length];
+                const size = isSparkle ? 3 : 4 + Math.floor(Math.random() * 3);
+                return (
+                  <motion.div
+                    key={`particle-${i}`}
+                    className="absolute"
+                    style={{
+                      right: "14%",
+                      bottom: "28%",
+                      width: size,
+                      height: size,
+                      background: color,
+                      borderRadius: 0,
+                      boxShadow: isSparkle ? `0 0 6px ${color}` : "none",
+                    }}
+                    initial={{ x: 0, y: 0, opacity: 1, scale: 0.6, rotate: 0 }}
+                    animate={{
+                      x: dx,
+                      y: dy,
+                      opacity: [1, 1, 0],
+                      scale: [0.6, 1.1, 0.4],
+                      rotate: isSparkle ? 0 : Math.random() * 360,
+                    }}
+                    transition={{ duration: 0.7, ease: "easeOut" }}
+                  />
+                );
+              })}
+              {/* Flash */}
+              <motion.div
+                className="absolute"
+                style={{
+                  right: "10%",
+                  bottom: "24%",
+                  width: 40,
+                  height: 40,
+                  background: "radial-gradient(circle, hsla(48,100%,80%,0.9) 0%, hsla(48,100%,60%,0) 70%)",
+                  borderRadius: 0,
+                  pointerEvents: "none",
+                }}
+                initial={{ opacity: 0, scale: 0.4 }}
+                animate={{ opacity: [0, 0.9, 0], scale: [0.4, 1.6, 2] }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              />
+              {/* Split into two smaller versions — with motion blur */}
               <motion.div
                 key="split-left"
                 className="absolute bottom-8 flex flex-col items-center"
                 style={{ right: "12%" }}
-                initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-                animate={{ x: -30, y: -20, rotate: -25, scale: 0.6, opacity: [1, 1, 0.9] }}
+                initial={{ x: 0, y: 0, opacity: 1, scale: 1, filter: "blur(0px)" }}
+                animate={{
+                  x: -30,
+                  y: -20,
+                  rotate: -25,
+                  scale: 0.6,
+                  opacity: [1, 1, 0.9],
+                  filter: ["blur(0px)", "blur(2px)", "blur(0px)"],
+                }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
               >
                 <motion.span
@@ -350,8 +408,15 @@ const FlowVisualization = () => {
                 key="split-right"
                 className="absolute bottom-8 flex flex-col items-center"
                 style={{ right: "12%" }}
-                initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-                animate={{ x: 30, y: -15, rotate: 20, scale: 0.6, opacity: [1, 1, 0.9] }}
+                initial={{ x: 0, y: 0, opacity: 1, scale: 1, filter: "blur(0px)" }}
+                animate={{
+                  x: 30,
+                  y: -15,
+                  rotate: 20,
+                  scale: 0.6,
+                  opacity: [1, 1, 0.9],
+                  filter: ["blur(0px)", "blur(2px)", "blur(0px)"],
+                }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
               >
                 <motion.span
