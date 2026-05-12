@@ -17,6 +17,8 @@ const FlowVisualization = () => {
   const [pipeSize, setPipeSize] = useState<PipeKey>("small");
   const [loop, setLoop] = useState(false);
   const [speed, setSpeed] = useState<1 | 2 | 3>(1);
+  const [splitDelay, setSplitDelay] = useState(1.0);
+  const [reassembleDuration, setReassembleDuration] = useState(1.0);
   const [coins, setCoins] = useState<{ id: number; x: number; y: number }[]>([]);
   const [score, setScore] = useState(0);
   const [reaction, setReaction] = useState<"idle" | "cheer" | "duck" | "split">("idle");
@@ -45,8 +47,7 @@ const FlowVisualization = () => {
     setTimeout(() => {
       if (fits) {
         playWhoosh();
-        // Molecule hits the man — he splits!
-        const hitDelay = (1600 / speed);
+        const hitDelay = splitDelay * 1000 / speed;
         setTimeout(() => {
           setReaction("split");
           setSplit(true);
@@ -54,7 +55,7 @@ const FlowVisualization = () => {
             setSplit(false);
             setReaction("cheer");
             setTimeout(() => setReaction("idle"), 1000 / speed);
-          }, 1400 / speed);
+          }, reassembleDuration * 1000 / speed);
         }, hitDelay);
         const newCoins = Array.from({ length: 3 }, (_, i) => ({
           id: coinIdRef.current++,
