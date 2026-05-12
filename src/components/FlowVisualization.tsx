@@ -68,21 +68,14 @@ const FlowVisualization = () => {
     setFlowing(true);
     setStats(s => ({ ...s, runs: s.runs + 1 }));
     const sfxDelay = fits ? (1200 / speed) : (900 / speed);
-    setTimeout(() => {
-      if (fits) {
-        setStats(s => ({ ...s, passes: s.passes + 1 }));
+    if (fits) {
+      // Trigger split when molecule enters the hitbox window (measured from flow start).
+      const hitDelay = computeHitDelay(hitbox.position);
+      setTimeout(() => {
+        setStats(s => ({ ...s, passes: s.passes + 1, splits: s.splits + 1 }));
         playWhoosh();
-        const hitDelay = splitDelay * 1000 / speed;
-        setTimeout(() => {
-          setStats(s => ({ ...s, splits: s.splits + 1 }));
-          setReaction("split");
-          setSplit(true);
-          setTimeout(() => {
-            setSplit(false);
-            setReaction("cheer");
-            setTimeout(() => setReaction("idle"), 1000 / speed);
-          }, reassembleDuration * 1000 / speed);
-        }, hitDelay);
+        setReaction("split");
+        setSplit(true);
         const newCoins = Array.from({ length: 3 }, (_, i) => ({
           id: coinIdRef.current++,
           x: 60 + Math.random() * 20,
@@ -94,13 +87,20 @@ const FlowVisualization = () => {
         setTimeout(() => {
           setCoins(prev => prev.filter(c => !newCoins.find(nc => nc.id === c.id)));
         }, 1200);
-      } else {
+        setTimeout(() => {
+          setSplit(false);
+          setReaction("cheer");
+          setTimeout(() => setReaction("idle"), 1000 / speed);
+        }, reassembleDuration * 1000 / speed);
+      }, hitDelay);
+    } else {
+      setTimeout(() => {
         setStats(s => ({ ...s, stucks: s.stucks + 1 }));
         playBonk();
         setReaction("duck");
         setTimeout(() => setReaction("idle"), 1200 / speed);
-      }
-    }, sfxDelay);
+      }, sfxDelay);
+    }
     timeoutRef.current = setTimeout(() => {
       setFlowing(false);
       if (loopRef.current) {
