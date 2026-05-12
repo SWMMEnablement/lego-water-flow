@@ -17,6 +17,8 @@ const FlowVisualization = () => {
   const [pipeSize, setPipeSize] = useState<PipeKey>("small");
   const [loop, setLoop] = useState(false);
   const [speed, setSpeed] = useState<1 | 2 | 3>(1);
+  const [splitDelay, setSplitDelay] = useState(1.0);
+  const [reassembleDuration, setReassembleDuration] = useState(1.0);
   const [coins, setCoins] = useState<{ id: number; x: number; y: number }[]>([]);
   const [score, setScore] = useState(0);
   const [reaction, setReaction] = useState<"idle" | "cheer" | "duck" | "split">("idle");
@@ -45,8 +47,7 @@ const FlowVisualization = () => {
     setTimeout(() => {
       if (fits) {
         playWhoosh();
-        // Molecule hits the man — he splits!
-        const hitDelay = (1600 / speed);
+        const hitDelay = splitDelay * 1000 / speed;
         setTimeout(() => {
           setReaction("split");
           setSplit(true);
@@ -54,7 +55,7 @@ const FlowVisualization = () => {
             setSplit(false);
             setReaction("cheer");
             setTimeout(() => setReaction("idle"), 1000 / speed);
-          }, 1400 / speed);
+          }, reassembleDuration * 1000 / speed);
         }, hitDelay);
         const newCoins = Array.from({ length: 3 }, (_, i) => ({
           id: coinIdRef.current++,
@@ -140,6 +141,46 @@ const FlowVisualization = () => {
         >
           ↻ Loop {loop ? "ON" : "OFF"}
         </button>
+      </div>
+
+      {/* Split timing controls — pixel style */}
+      <div className="flex justify-center items-center gap-4">
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] font-display text-muted-foreground uppercase tracking-wider">Split:</span>
+          <button
+            onClick={() => setSplitDelay(d => Math.max(0.2, +(d - 0.1).toFixed(1)))}
+            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
+            style={{ borderRadius: 0 }}
+          >
+            −
+          </button>
+          <span className="w-8 text-center font-display font-bold text-[10px] text-foreground">{splitDelay.toFixed(1)}s</span>
+          <button
+            onClick={() => setSplitDelay(d => Math.min(2.0, +(d + 0.1).toFixed(1)))}
+            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
+            style={{ borderRadius: 0 }}
+          >
+            +
+          </button>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] font-display text-muted-foreground uppercase tracking-wider">Reasm:</span>
+          <button
+            onClick={() => setReassembleDuration(d => Math.max(0.2, +(d - 0.1).toFixed(1)))}
+            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
+            style={{ borderRadius: 0 }}
+          >
+            −
+          </button>
+          <span className="w-8 text-center font-display font-bold text-[10px] text-foreground">{reassembleDuration.toFixed(1)}s</span>
+          <button
+            onClick={() => setReassembleDuration(d => Math.min(2.0, +(d + 0.1).toFixed(1)))}
+            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
+            style={{ borderRadius: 0 }}
+          >
+            +
+          </button>
+        </div>
       </div>
 
       {/* Game stage — retro platformer look */}
