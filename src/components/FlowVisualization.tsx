@@ -143,6 +143,46 @@ const FlowVisualization = () => {
         </button>
       </div>
 
+      {/* Split timing controls — pixel style */}
+      <div className="flex justify-center items-center gap-4">
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] font-display text-muted-foreground uppercase tracking-wider">Split:</span>
+          <button
+            onClick={() => setSplitDelay(d => Math.max(0.2, +(d - 0.1).toFixed(1)))}
+            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
+            style={{ borderRadius: 0 }}
+          >
+            −
+          </button>
+          <span className="w-8 text-center font-display font-bold text-[10px] text-foreground">{splitDelay.toFixed(1)}s</span>
+          <button
+            onClick={() => setSplitDelay(d => Math.min(2.0, +(d + 0.1).toFixed(1)))}
+            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
+            style={{ borderRadius: 0 }}
+          >
+            +
+          </button>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] font-display text-muted-foreground uppercase tracking-wider">Reasm:</span>
+          <button
+            onClick={() => setReassembleDuration(d => Math.max(0.2, +(d - 0.1).toFixed(1)))}
+            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
+            style={{ borderRadius: 0 }}
+          >
+            −
+          </button>
+          <span className="w-8 text-center font-display font-bold text-[10px] text-foreground">{reassembleDuration.toFixed(1)}s</span>
+          <button
+            onClick={() => setReassembleDuration(d => Math.min(2.0, +(d + 0.1).toFixed(1)))}
+            className="w-6 h-6 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-foreground transition-colors"
+            style={{ borderRadius: 0 }}
+          >
+            +
+          </button>
+        </div>
+      </div>
+
       {/* Game stage — retro platformer look */}
       <div
         className="relative h-48 overflow-hidden border-4 border-foreground"
