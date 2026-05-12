@@ -23,6 +23,7 @@ const FlowVisualization = () => {
   const [score, setScore] = useState(0);
   const [reaction, setReaction] = useState<"idle" | "cheer" | "duck" | "split">("idle");
   const [split, setSplit] = useState(false);
+  const [stats, setStats] = useState({ runs: 0, passes: 0, stucks: 0, splits: 0 });
   const coinIdRef = useRef(0);
   const loopRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
@@ -43,12 +44,15 @@ const FlowVisualization = () => {
 
   const handleFlow = () => {
     setFlowing(true);
+    setStats(s => ({ ...s, runs: s.runs + 1 }));
     const sfxDelay = fits ? (1200 / speed) : (900 / speed);
     setTimeout(() => {
       if (fits) {
+        setStats(s => ({ ...s, passes: s.passes + 1 }));
         playWhoosh();
         const hitDelay = splitDelay * 1000 / speed;
         setTimeout(() => {
+          setStats(s => ({ ...s, splits: s.splits + 1 }));
           setReaction("split");
           setSplit(true);
           setTimeout(() => {
@@ -69,6 +73,7 @@ const FlowVisualization = () => {
           setCoins(prev => prev.filter(c => !newCoins.find(nc => nc.id === c.id)));
         }, 1200);
       } else {
+        setStats(s => ({ ...s, stucks: s.stucks + 1 }));
         playBonk();
         setReaction("duck");
         setTimeout(() => setReaction("idle"), 1200 / speed);
@@ -479,9 +484,44 @@ const FlowVisualization = () => {
             className="bg-destructive border-b-4 border-[hsl(358,100%,32%)] px-4 py-2.5 font-display font-bold text-sm text-destructive-foreground active:border-b-0 active:mt-1 transition-colors"
             style={{ borderRadius: 0 }}
           >
-            ■ Stop
+          ■ Stop
           </motion.button>
         )}
+      </div>
+
+      {/* Stats HUD — pixel style */}
+      <div className="flex justify-center">
+        <div className="border-2 border-foreground bg-card p-2" style={{ borderRadius: 0 }}>
+          <div className="flex items-center gap-3">
+            <div className="text-center">
+              <div className="text-[9px] font-display text-muted-foreground uppercase tracking-wider">Runs</div>
+              <div className="font-display font-bold text-sm text-foreground">{stats.runs}</div>
+            </div>
+            <div className="w-px h-6 bg-border" />
+            <div className="text-center">
+              <div className="text-[9px] font-display text-lego-green uppercase tracking-wider">Pass</div>
+              <div className="font-display font-bold text-sm text-lego-green">{stats.passes}</div>
+            </div>
+            <div className="w-px h-6 bg-border" />
+            <div className="text-center">
+              <div className="text-[9px] font-display text-destructive uppercase tracking-wider">Stuck</div>
+              <div className="font-display font-bold text-sm text-destructive">{stats.stucks}</div>
+            </div>
+            <div className="w-px h-6 bg-border" />
+            <div className="text-center">
+              <div className="text-[9px] font-display text-lego-blue uppercase tracking-wider">Split</div>
+              <div className="font-display font-bold text-sm" style={{ color: "hsl(211,100%,50%)" }}>{stats.splits}</div>
+            </div>
+            <div className="w-px h-6 bg-border" />
+            <button
+              onClick={() => setStats({ runs: 0, passes: 0, stucks: 0, splits: 0 })}
+              className="px-2 py-1 font-display font-bold text-[9px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-muted-foreground transition-colors"
+              style={{ borderRadius: 0 }}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
