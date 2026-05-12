@@ -12,12 +12,21 @@ const pipeOptions = [
 
 type PipeKey = (typeof pipeOptions)[number]["key"];
 
+type HitboxConfig = { position: number; window: number };
+const defaultHitboxes: Record<PipeKey, HitboxConfig> = {
+  tiny: { position: 70, window: 12 },
+  small: { position: 70, window: 12 },
+  medium: { position: 75, window: 14 },
+  large: { position: 80, window: 18 },
+};
+
 const FlowVisualization = () => {
   const [flowing, setFlowing] = useState(false);
   const [pipeSize, setPipeSize] = useState<PipeKey>("small");
   const [loop, setLoop] = useState(false);
   const [speed, setSpeed] = useState<1 | 2 | 3>(1);
-  const [splitDelay, setSplitDelay] = useState(1.0);
+  const [hitboxes, setHitboxes] = useState<Record<PipeKey, HitboxConfig>>(defaultHitboxes);
+  const [showHitbox, setShowHitbox] = useState(true);
   const [reassembleDuration, setReassembleDuration] = useState(1.0);
   const [coins, setCoins] = useState<{ id: number; x: number; y: number }[]>([]);
   const [score, setScore] = useState(0);
@@ -31,6 +40,19 @@ const FlowVisualization = () => {
   const pipe = pipeOptions.find((p) => p.key === pipeSize)!;
   const fits = pipe.fits;
   const duration = fits ? 2 / speed : 1 / speed;
+  const hitbox = hitboxes[pipeSize];
+
+  // Convert hitbox position (% of stage) to trigger time (ms) using molecule animation timeline.
+  // Molecule path: [-13%, 45%, 113%] at times [0, 0.4, 1] of `duration`.
+  const computeHitDelay = (posPct: number) => {
+    const ms = duration * 1000;
+    if (posPct <= 45) {
+      const t = (posPct - -13) / (45 - -13); // 0..1 in phase A
+      return Math.max(0, t) * 0.4 * ms;
+    }
+    const t = (posPct - 45) / (113 - 45); // 0..1 in phase B
+    return (0.4 + Math.min(1, t) * 0.6) * ms;
+  };
 
   useEffect(() => {
     loopRef.current = loop;
