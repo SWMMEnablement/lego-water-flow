@@ -484,9 +484,44 @@ const FlowVisualization = () => {
             className="bg-destructive border-b-4 border-[hsl(358,100%,32%)] px-4 py-2.5 font-display font-bold text-sm text-destructive-foreground active:border-b-0 active:mt-1 transition-colors"
             style={{ borderRadius: 0 }}
           >
-            ■ Stop
+          ■ Stop
           </motion.button>
         )}
+      </div>
+
+      {/* Stats HUD — pixel style */}
+      <div className="flex justify-center">
+        <div className="border-2 border-foreground bg-card p-2" style={{ borderRadius: 0 }}>
+          <div className="flex items-center gap-3">
+            <div className="text-center">
+              <div className="text-[9px] font-display text-muted-foreground uppercase tracking-wider">Runs</div>
+              <div className="font-display font-bold text-sm text-foreground">{stats.runs}</div>
+            </div>
+            <div className="w-px h-6 bg-border" />
+            <div className="text-center">
+              <div className="text-[9px] font-display text-lego-green uppercase tracking-wider">Pass</div>
+              <div className="font-display font-bold text-sm text-lego-green">{stats.passes}</div>
+            </div>
+            <div className="w-px h-6 bg-border" />
+            <div className="text-center">
+              <div className="text-[9px] font-display text-destructive uppercase tracking-wider">Stuck</div>
+              <div className="font-display font-bold text-sm text-destructive">{stats.stucks}</div>
+            </div>
+            <div className="w-px h-6 bg-border" />
+            <div className="text-center">
+              <div className="text-[9px] font-display text-lego-blue uppercase tracking-wider">Split</div>
+              <div className="font-display font-bold text-sm" style={{ color: "hsl(211,100%,50%)" }}>{stats.splits}</div>
+            </div>
+            <div className="w-px h-6 bg-border" />
+            <button
+              onClick={() => setStats({ runs: 0, passes: 0, stucks: 0, splits: 0 })}
+              className="px-2 py-1 font-display font-bold text-[9px] border-b-[3px] active:border-b-0 active:mt-[3px] bg-muted border-[hsl(210,20%,78%)] text-muted-foreground transition-colors"
+              style={{ borderRadius: 0 }}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
