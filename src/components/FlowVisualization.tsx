@@ -255,6 +255,26 @@ const FlowVisualization = () => {
           ))}
         </div>
 
+        {/* Hitbox visualizer — band where split triggers */}
+        {showHitbox && fits && (
+          <div
+            className="absolute top-0 bottom-8 pointer-events-none border-x-2 border-dashed"
+            style={{
+              left: `${hitbox.position - hitbox.window / 2}%`,
+              width: `${hitbox.window}%`,
+              background: "hsla(48,100%,55%,0.15)",
+              borderColor: "hsla(48,100%,45%,0.7)",
+            }}
+          >
+            <div
+              className="absolute -top-0.5 left-1/2 -translate-x-1/2 px-1 font-display font-bold text-[8px] tracking-wider"
+              style={{ background: "hsl(48,100%,55%)", color: "hsl(35,80%,25%)", borderRadius: 0 }}
+            >
+              HIT
+            </div>
+          </div>
+        )}
+
         {/* Ground — green platform blocks */}
         <div className="absolute bottom-0 left-0 right-0 h-8 flex">
           {Array.from({ length: 30 }).map((_, i) => (
