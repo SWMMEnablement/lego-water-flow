@@ -738,6 +738,73 @@ const FlowVisualization = () => {
           </div>
         </div>
       </div>
+
+      {/* Auto-Test results panel */}
+      {(autoTest || Object.keys(autoResults).length > 0) && (
+        <div className="flex justify-center">
+          <div className="border-2 border-foreground bg-card p-2 min-w-[260px]" style={{ borderRadius: 0 }}>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-display font-bold text-[10px] uppercase tracking-wider text-foreground">
+                Auto-Test Results
+              </span>
+              <span className="font-display text-[9px] uppercase tracking-wider text-muted-foreground">
+                {autoTest ? "Running…" : "Done"}
+              </span>
+            </div>
+            <div className="space-y-1">
+              {autoSequence.map((key) => {
+                const p = pipeOptions.find((o) => o.key === key)!;
+                const r = autoResults[key];
+                const isCurrent = autoCurrent === key;
+                return (
+                  <div
+                    key={key}
+                    className={`flex items-center justify-between gap-2 px-2 py-1 border ${
+                      isCurrent ? "border-lego-yellow" : "border-border"
+                    }`}
+                    style={{
+                      borderRadius: 0,
+                      background: isCurrent ? "hsla(48,100%,55%,0.15)" : "transparent",
+                    }}
+                  >
+                    <span className="font-display font-bold text-[10px] text-foreground">
+                      {p.label} <span className="text-muted-foreground font-normal">({p.mm})</span>
+                    </span>
+                    {r ? (
+                      <span
+                        className="px-1.5 py-0.5 font-display font-bold text-[9px] border border-foreground"
+                        style={{
+                          borderRadius: 0,
+                          background: r === "split" ? "hsl(48,100%,55%)" : "hsl(358,100%,55%)",
+                          color: r === "split" ? "hsl(35,80%,25%)" : "hsl(0,0%,100%)",
+                        }}
+                      >
+                        {r === "split" ? "✂ SPLIT" : "✗ STUCK"}
+                      </span>
+                    ) : (
+                      <span className="font-display text-[9px] text-muted-foreground uppercase tracking-wider">
+                        {isCurrent ? "Testing…" : "Pending"}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-2 pt-1.5 border-t border-border flex items-center justify-center gap-3">
+              <span className="font-display text-[9px] uppercase tracking-wider text-muted-foreground">Totals:</span>
+              <span className="font-display font-bold text-[10px]" style={{ color: "hsl(48,90%,40%)" }}>
+                ✂ {Object.values(autoResults).filter((v) => v === "split").length} Split
+              </span>
+              <span className="font-display font-bold text-[10px] text-destructive">
+                ✗ {Object.values(autoResults).filter((v) => v === "stuck").length} Stuck
+              </span>
+              <span className="font-display text-[9px] text-muted-foreground">
+                {Object.keys(autoResults).length}/{autoSequence.length}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
