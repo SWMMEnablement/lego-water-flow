@@ -76,24 +76,29 @@ const FlowVisualization = () => {
     loopRef.current = loop;
   }, [loop]);
 
+  // Persist Auto-Test results across reloads.
   useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
+    try { localStorage.setItem(RESULTS_KEY, JSON.stringify(autoResults)); } catch { /* ignore */ }
+  }, [autoResults]);
+
+  // Unmount: kill every pending timer.
+  useEffect(() => () => clearAllTimers(), []);
 
   const handleFlow = () => {
     setFlowing(true);
     setStats(s => ({ ...s, runs: s.runs + 1 }));
     const sfxDelay = fits ? (1200 / speed) : (900 / speed);
     if (fits) {
-      // Trigger split when molecule enters the hitbox window (measured from flow start).
       const hitDelay = computeHitDelay(hitbox.position);
-      setTimeout(() => {
+      addTimer(setTimeout(() => {
         setStats(s => ({ ...s, passes: s.passes + 1, splits: s.splits + 1 }));
         playWhoosh();
         setReaction("split");
         setSplit(true);
+        // Auto-Test: record actual split result here, not at trigger time.
+        if (autoRef.current) {
+          setAutoResults(r => ({ ...r, [pipeSize]: "split" }));
+        }
         const newCoins = Array.from({ length: 3 }, (_, i) => ({
           id: coinIdRef.current++,
           x: 60 + Math.random() * 20,
@@ -102,46 +107,49 @@ const FlowVisualization = () => {
         setCoins(prev => [...prev, ...newCoins]);
         setScore(prev => prev + 10);
         playCoin();
-        setTimeout(() => {
+        addTimer(setTimeout(() => {
           setCoins(prev => prev.filter(c => !newCoins.find(nc => nc.id === c.id)));
-        }, 1200);
-        setTimeout(() => {
+        }, 1200));
+        addTimer(setTimeout(() => {
           setSplit(false);
           setReaction("cheer");
-          setTimeout(() => setReaction("idle"), 1000 / speed);
-        }, reassembleDuration * 1000 / speed);
-      }, hitDelay);
+          addTimer(setTimeout(() => setReaction("idle"), 1000 / speed));
+        }, reassembleDuration * 1000 / speed));
+      }, hitDelay));
     } else {
-      setTimeout(() => {
+      addTimer(setTimeout(() => {
         setStats(s => ({ ...s, stucks: s.stucks + 1 }));
         playBonk();
         setReaction("duck");
-        setTimeout(() => setReaction("idle"), 1200 / speed);
-      }, sfxDelay);
+        if (autoRef.current) {
+          setAutoResults(r => ({ ...r, [pipeSize]: "stuck" }));
+        }
+        addTimer(setTimeout(() => setReaction("idle"), 1200 / speed));
+      }, sfxDelay));
     }
-    timeoutRef.current = setTimeout(() => {
+    timeoutRef.current = addTimer(setTimeout(() => {
       setFlowing(false);
       if (loopRef.current) {
-        timeoutRef.current = setTimeout(() => handleFlow(), 400);
+        timeoutRef.current = addTimer(setTimeout(() => handleFlow(), 400));
       }
-    }, (fits ? 2200 : 1200) / speed);
+    }, (fits ? 2200 : 1200) / speed));
   };
 
   const handleStop = () => {
     setLoop(false);
     loopRef.current = false;
     setFlowing(false);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    clearAllTimers();
   };
 
-  // Auto-test sequence: cycles through ⅜", ½", ¾", 1" and records split vs stuck.
+  // Auto-test sequence: cycles through ½", ¾", 1", ⅜" and records actual split vs stuck.
   const autoSequence: PipeKey[] = ["small", "medium", "large", "tiny"];
 
   const stopAutoTest = () => {
     autoRef.current = false;
     setAutoTest(false);
     setAutoCurrent(null);
-    if (autoTimeoutRef.current) clearTimeout(autoTimeoutRef.current);
+    clearAllTimers();
   };
 
   const runAutoTest = () => {
@@ -150,31 +158,31 @@ const FlowVisualization = () => {
     setAutoTest(true);
     autoRef.current = true;
 
-    const stepDuration = 2800 / speed; // enough time for fits flow + reassemble
+    const stepDuration = 2800 / speed;
     autoSequence.forEach((key, i) => {
-      autoTimeoutRef.current = setTimeout(() => {
+      autoTimeoutRef.current = addTimer(setTimeout(() => {
         if (!autoRef.current) return;
-        const target = pipeOptions.find(p => p.key === key)!;
         setPipeSize(key);
         setAutoCurrent(key);
-        // Defer flow one tick so pipeSize state applies before handleFlow reads it.
-        setTimeout(() => {
+        addTimer(setTimeout(() => {
           if (!autoRef.current) return;
-          // Mirror handleFlow but capture result for this pipe.
-          setAutoResults(r => ({ ...r, [key]: target.fits ? "split" : "stuck" }));
           handleFlow();
-        }, 50);
-      }, i * stepDuration);
+        }, 50));
+      }, i * stepDuration));
     });
 
-    autoTimeoutRef.current = setTimeout(() => {
+    autoTimeoutRef.current = addTimer(setTimeout(() => {
       autoRef.current = false;
       setAutoTest(false);
       setAutoCurrent(null);
-    }, autoSequence.length * stepDuration);
+    }, autoSequence.length * stepDuration));
   };
 
-  useEffect(() => () => { if (autoTimeoutRef.current) clearTimeout(autoTimeoutRef.current); }, []);
+  const toggleMute = () => {
+    const next = !muted;
+    setMuted(next);
+    setMutedState(next);
+  };
 
   return (
     <div className="space-y-4" style={{ imageRendering: "pixelated" }}>
