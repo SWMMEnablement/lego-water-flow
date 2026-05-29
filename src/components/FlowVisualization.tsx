@@ -263,7 +263,7 @@ const FlowVisualization = () => {
         </button>
         <button
           onClick={() => (autoTest ? stopAutoTest() : runAutoTest())}
-          className={`px-2.5 py-1 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] transition-colors ${
+          className={`px-2.5 py-1 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lego-yellow ${
             autoTest
               ? "bg-destructive border-[hsl(358,100%,32%)] text-destructive-foreground"
               : "bg-lego-yellow border-[hsl(48,100%,36%)] text-accent-foreground"
@@ -271,6 +271,20 @@ const FlowVisualization = () => {
           style={{ borderRadius: 0 }}
         >
           {autoTest ? "■ Stop Test" : "▶ Auto-Test"}
+        </button>
+        <button
+          onClick={toggleMute}
+          aria-pressed={muted}
+          aria-label={muted ? "Unmute sound effects" : "Mute sound effects"}
+          title={muted ? "Sound: off" : "Sound: on"}
+          className={`px-2.5 py-1 font-display font-bold text-[10px] border-b-[3px] active:border-b-0 active:mt-[3px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lego-yellow ${
+            muted
+              ? "bg-muted border-[hsl(210,20%,78%)] text-muted-foreground"
+              : "bg-lego-blue border-[hsl(211,100%,22%)] text-primary-foreground"
+          }`}
+          style={{ borderRadius: 0 }}
+        >
+          {muted ? "🔇 Muted" : "🔊 Sound"}
         </button>
       </div>
 
