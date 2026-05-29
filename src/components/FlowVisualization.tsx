@@ -467,14 +467,14 @@ const FlowVisualization = () => {
               style={{ right: "12%" }}
               animate={
                 reaction === "cheer"
-                  ? { y: [0, -12, 0, -8, 0], rotate: [0, -10, 10, -5, 0] }
+                  ? (prefersReducedMotion ? { y: 0 } : { y: [0, -12, 0, -8, 0], rotate: [0, -10, 10, -5, 0] })
                   : reaction === "duck"
-                  ? { y: [0, 6], scaleY: [1, 0.7], rotate: [0, 5] }
-                  : { y: [0, -2, 0] }
+                  ? (prefersReducedMotion ? { y: 0 } : { y: [0, 6], scaleY: [1, 0.7], rotate: [0, 5] })
+                  : (prefersReducedMotion ? { y: 0 } : { y: [0, -2, 0] })
               }
               transition={
                 reaction === "idle"
-                  ? { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
+                  ? (prefersReducedMotion ? { duration: 0 } : { duration: 1.5, repeat: Infinity, ease: "easeInOut" })
                   : { duration: 0.5, ease: "easeOut" }
               }
             >
