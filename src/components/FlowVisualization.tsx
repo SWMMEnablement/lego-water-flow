@@ -721,7 +721,7 @@ const FlowVisualization = () => {
         <button
           onClick={handleFlow}
           disabled={flowing}
-          className="bg-lego-yellow border-b-4 border-[hsl(48,100%,36%)] px-6 py-2.5 font-display font-bold text-sm text-accent-foreground disabled:opacity-40 active:border-b-0 active:mt-1 transition-colors"
+          className="bg-lego-yellow border-b-4 border-[hsl(48,100%,36%)] px-6 py-2.5 font-display font-bold text-sm text-accent-foreground disabled:opacity-40 active:border-b-0 active:mt-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2"
           style={{ borderRadius: 0 }}
         >
           {flowing ? "Flowing..." : "▸ Send It!"}
