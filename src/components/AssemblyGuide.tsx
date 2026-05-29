@@ -133,7 +133,9 @@ const AssemblyGuide = () => {
             key={s.id}
             whileTap={{ scale: 0.9 }}
             onClick={() => setCurrentStep(i)}
-            className={`w-10 h-10 rounded-xl font-display font-bold text-sm border-[3px] transition-colors duration-150 ${
+            aria-current={i === currentStep ? "step" : undefined}
+            aria-label={`Go to step ${s.id}: ${s.title}`}
+            className={`w-10 h-10 rounded-xl font-display font-bold text-sm border-[3px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lego-yellow focus-visible:ring-offset-2 ${
               i === currentStep
                 ? "border-primary bg-primary text-primary-foreground"
                 : i < currentStep

@@ -27,7 +27,7 @@ const Index = () => {
             <LegoStud color="green" size={16} delay={0.15} />
           </div>
           <span className="font-display text-sm font-bold uppercase tracking-widest text-primary-foreground">
-            TECHNOLOGY 🌸
+            LEGO WATER FLOW LAB 🧱
           </span>
         </div>
       </header>
@@ -142,22 +142,25 @@ const Index = () => {
                 <tr className="bg-primary text-primary-foreground">
                   <th className="px-4 py-3 text-left font-display font-bold">Component</th>
                   <th className="px-4 py-3 text-left font-display font-bold">Dimension</th>
+                  <th className="px-4 py-3 text-center font-display font-bold w-16">Fits?</th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  ["LEGO 2×2 Brick (Oxygen)", "15.8 × 15.8 × 11.4 mm"],
-                  ["LEGO 1×1 Round (Hydrogen)", "Ø 8.0 × 11.4 mm"],
-                  ["Assembled H₂O Molecule", "~31.6 × 15.8 × 11.4 mm"],
-                  ["Standard ½\" Pipe ID", "Ø 12.7 mm"],
-                  ["Recommended ¾\" Pipe ID", "Ø 19.05 mm"],
-                ].map(([component, dimension], i) => (
-                  <tr
-                    key={i}
-                    className={i % 2 === 0 ? "bg-card" : "bg-muted/50"}
-                  >
-                    <td className="px-4 py-3 font-medium text-foreground">{component}</td>
-                    <td className="px-4 py-3 text-muted-foreground font-mono">{dimension}</td>
+                  ["LEGO 2×2 Brick (Oxygen)", "15.8 × 15.8 × 11.4 mm", null],
+                  ["LEGO 1×1 Round (Hydrogen)", "Ø 8.0 × 11.4 mm", null],
+                  ["Assembled H₂O Molecule", "~31.6 × 15.8 × 11.4 mm", null],
+                  ["Standard ½\" Pipe ID", "Ø 12.7 mm", false],
+                  ["Recommended ¾\" Pipe ID", "Ø 19.05 mm", true],
+                ].map(([component, dimension, fits], i) => (
+                  <tr key={i} className={i % 2 === 0 ? "bg-card" : "bg-muted/50"}>
+                    <td className="px-4 py-3 font-medium text-foreground">{component as string}</td>
+                    <td className="px-4 py-3 text-muted-foreground font-mono">{dimension as string}</td>
+                    <td className="px-4 py-3 text-center font-display font-bold">
+                      {fits === true && <span className="text-lego-green" aria-label="fits">✓</span>}
+                      {fits === false && <span className="text-destructive" aria-label="too small">✗</span>}
+                      {fits === null && <span className="text-muted-foreground/40" aria-hidden>—</span>}
+                    </td>
                   </tr>
                 ))}
               </tbody>
