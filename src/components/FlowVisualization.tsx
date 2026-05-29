@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { playBonk, playWhoosh, playCoin } from "@/lib/sounds";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { playBonk, playWhoosh, playCoin, isMuted, setMuted } from "@/lib/sounds";
 import legoPixelMan from "@/assets/lego-pixel-man.png";
+
+const RESULTS_KEY = "lwfl:autoResults";
 
 const pipeOptions = [
   { key: "tiny", label: '⅜"', diameter: 28, mm: "9.5mm", fits: false },
@@ -34,11 +36,22 @@ const FlowVisualization = () => {
   const [split, setSplit] = useState(false);
   const [stats, setStats] = useState({ runs: 0, passes: 0, stucks: 0, splits: 0 });
   const [autoTest, setAutoTest] = useState(false);
-  const [autoResults, setAutoResults] = useState<Partial<Record<PipeKey, "split" | "stuck">>>({});
+  const [autoResults, setAutoResults] = useState<Partial<Record<PipeKey, "split" | "stuck">>>(() => {
+    try { return JSON.parse(localStorage.getItem(RESULTS_KEY) || "{}"); } catch { return {}; }
+  });
   const [autoCurrent, setAutoCurrent] = useState<PipeKey | null>(null);
+  const [muted, setMutedState] = useState<boolean>(() => isMuted());
+  const prefersReducedMotion = useReducedMotion();
   const coinIdRef = useRef(0);
   const loopRef = useRef(false);
   const autoRef = useRef(false);
+  // Centralized timer tracking so unmount / Stop clears everything.
+  const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const addTimer = (id: ReturnType<typeof setTimeout>) => { timersRef.current.add(id); return id; };
+  const clearAllTimers = () => {
+    timersRef.current.forEach((t) => clearTimeout(t));
+    timersRef.current.clear();
+  };
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const autoTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
