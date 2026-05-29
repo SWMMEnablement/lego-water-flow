@@ -37,13 +37,13 @@ export const BrickCardHeader = ({
   children: ReactNode;
   variant?: "default" | "problem" | "solution";
 }) => (
-  <div
-    className={`${headerColors[variant]} px-6 py-3 font-display text-lg font-bold tracking-wide ${
+  <h2
+    className={`${headerColors[variant]} px-6 py-3 font-display text-lg font-bold tracking-wide m-0 ${
       variant === "solution" ? "text-accent-foreground" : "text-primary-foreground"
     }`}
   >
     {children}
-  </div>
+  </h2>
 );
 
 export const BrickCardBody = ({ children }: { children: ReactNode }) => (
