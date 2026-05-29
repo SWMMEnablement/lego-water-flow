@@ -507,8 +507,8 @@ const FlowVisualization = () => {
             </motion.div>
           ) : (
             <>
-              {/* Burst particles — LEGO bits + sparkles */}
-              {Array.from({ length: 14 }).map((_, i) => {
+              {/* Burst particles — LEGO bits + sparkles (suppressed when reduced motion) */}
+              {!prefersReducedMotion && Array.from({ length: 14 }).map((_, i) => {
                 const angle = (i / 14) * Math.PI * 2 + Math.random() * 0.4;
                 const dist = 35 + Math.random() * 35;
                 const dx = Math.cos(angle) * dist;
